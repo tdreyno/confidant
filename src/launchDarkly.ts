@@ -13,6 +13,7 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
 
   constructor(
     manager: Manager<LaunchDarklyContext, any, Record<string, any>>,
+    private launchDarklyKey: string,
     private key: string,
     private defaultValue: T,
   ) {
@@ -30,22 +31,20 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
   }
 
   initialize(): Promise<T> {
-    return this.manager
-      .get<string>("launchDarklyKey")
-      .then(key => this.getClient(key))
-      .then(client => {
-        client.on("change", () => {
-          this.onUpdate(client.variation(this.key, this.defaultValue))
-        })
-
-        return client.variation(this.key, this.defaultValue)
+    return this.getClient(this.launchDarklyKey).then(client => {
+      client.on("change", () => {
+        this.onUpdate(client.variation(this.key, this.defaultValue))
       })
+
+      return client.variation(this.key, this.defaultValue)
+    })
   }
 }
 
 export const LaunchDarkly =
-  <T>(key: string, defaultValue: T): TaskMaker<LaunchDarklyContext, T> =>
+  <T>(key: string, defaultValue: T) =>
+  (launchDarklyKey: string): TaskMaker<LaunchDarklyContext, T> =>
   manager =>
-    new LaunchDarkly_(manager, key, defaultValue)
+    new LaunchDarkly_(manager, launchDarklyKey, key, defaultValue)
 
 export type LaunchDarkly<T> = LaunchDarkly_<T>

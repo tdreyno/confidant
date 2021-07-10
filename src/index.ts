@@ -8,7 +8,11 @@ const DEV = {
   url: _("/dev"),
   psmServiceAccount: Secret("MyViasat-TSUsage/PSM/serviceAccount"),
   anotherThing: Secret("MyViasat-TSUsage/PSM/serviceAccount/DEV"),
-  featureA: LaunchDarkly("feature-a", "default-value"),
+
+  launchDarklyKey: Secret("LDKEY FROM AWS"),
+  featureA: Inputs("launchDarklyKey").chain(
+    LaunchDarkly("feature-a", "default-value"),
+  ),
 }
 
 const PROD = {
