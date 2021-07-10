@@ -16,7 +16,9 @@ const PROD = {
   url: _("/prod"),
   anotherThing: Secret("MyViasat-TSUsage/PSM/serviceAccount/PROD"),
 
-  viceToken: Inputs(["viceUrl", "viceCreds"]).chain(ViceToken),
+  viceUrl: _("vice"),
+  viceCreds: _({ username: "test", password: "pass" }),
+  viceToken: Inputs("viceUrl", "viceCreds").chain(ViceToken),
 }
 
 console.log(PROD)

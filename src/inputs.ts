@@ -16,7 +16,7 @@ export class Inputs_<C, V> extends Task<C, V> {
   }
 }
 
-export const Inputs = (keys: string[]) => ({
+export const Inputs = (...keys: string[]) => ({
   chain:
     <C, V>(fn: (...values: any[]) => TaskMaker<C, V>) =>
     (manager: Manager<C, any, Record<string, any>>) =>
