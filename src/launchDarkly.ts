@@ -1,10 +1,9 @@
-import { String } from "aws-sdk/clients/appstream"
 import LD from "launchdarkly-node-client-sdk"
 import { Manager, Task, TaskMaker } from "./task"
 
 interface LaunchDarklyContext {
   launchDarklyUser: {
-    key: String
+    key: string
   }
 }
 
