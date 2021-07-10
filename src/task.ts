@@ -1,3 +1,5 @@
+import { timeout } from "./util"
+
 export class Manager<C, V extends any, H extends Record<string, Task<C, V>>> {
   constructor(public context: C, private handlers: H) {}
 
@@ -10,6 +12,7 @@ export class Manager<C, V extends any, H extends Record<string, Task<C, V>>> {
 
   get<V2 = unknown>(key: keyof H): Promise<V2> {
     if (!this.handlers.hasOwnProperty(key)) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       return Promise.reject(new Error(`Invalid key: ${key}`))
     }
 
@@ -26,12 +29,17 @@ export abstract class Task<C, V> {
   protected currentValue: V | undefined
   private listeners: Set<(value: V) => void> = new Set()
 
-  constructor(protected manager: Manager<C, V, Record<string, any>>) {}
+  constructor(
+    protected manager: Manager<C, V, Record<string, any>>,
+    protected timeout = Infinity,
+  ) {}
 
   abstract initialize(): Promise<V>
 
   public get(): Promise<V> {
     if (this.hasInitialized) {
+      console.log("cached")
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return Promise.resolve(this.currentValue!)
     }
 
@@ -56,18 +64,22 @@ export abstract class Task<C, V> {
 
   public runInitialize(): Promise<V> {
     if (this.hasInitialized) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return Promise.resolve(this.currentValue!)
     }
 
-    return this.initialize().then(value => {
-      this.didInitialize(value)
+    return Promise.race([timeout<V>(this.timeout), this.initialize()]).then(
+      value => {
+        this.didInitialize(value)
 
-      return value as V
-    })
+        return value
+      },
+    )
   }
 
   private didInitialize(value: V) {
     this.hasInitialized = true
+    this.currentValue = value
     this.listeners.forEach(listener => listener(value))
   }
 }
