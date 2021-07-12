@@ -1,4 +1,4 @@
-import { Manager, Task } from "../task"
+import { Confidant, Task } from "../task"
 import { timeout } from "../util"
 
 const DELAY = 1000
@@ -7,7 +7,7 @@ const TIMEOUT = 5000
 type C = any
 class TestTask<T> extends Task<C, T> {
   constructor(
-    manager: Manager<C, any, Record<string, any>>,
+    manager: Confidant<C, any, Record<string, any>>,
     private value: T,
     private delay = DELAY,
   ) {

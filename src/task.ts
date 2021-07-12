@@ -1,6 +1,6 @@
 import { timeout } from "./util"
 
-export class Manager<C, V extends any, H extends Record<string, Task<C, V>>> {
+export class Confidant<C, V extends any, H extends Record<string, Task<C, V>>> {
   constructor(public context: C, private handlers: H) {}
 
   onInitialize<K extends keyof H>(
@@ -30,7 +30,7 @@ export abstract class Task<C, V> {
   private listeners: Set<(value: V) => void> = new Set()
 
   constructor(
-    protected manager: Manager<C, V, Record<string, any>>,
+    protected manager: Confidant<C, V, Record<string, any>>,
     protected timeout = Infinity,
   ) {}
 
@@ -88,7 +88,7 @@ export const isTask = <C, V>(s: Task<C, V> | unknown): s is Task<C, V> =>
   s instanceof Task
 
 export type TaskMaker<C, V> = (
-  manager: Manager<C, any, Record<string, any>>,
+  manager: Confidant<C, any, Record<string, any>>,
 ) => Task<C, V>
 
 export type TaskResult<T extends Task<any, any>> = T extends Task<any, infer V>

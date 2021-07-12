@@ -1,11 +1,11 @@
 import { decode } from "jsonwebtoken"
-import { Manager, TaskMaker } from "./task"
+import { Confidant, TaskMaker } from "./task"
 import { requestJWT, Token } from "./token"
 
 type ViceTokenData = { exp: number }
 export class ViceToken_ extends Token<ViceTokenData> {
   constructor(
-    manager: Manager<ViceTokenData, any, Record<string, any>>,
+    manager: Confidant<ViceTokenData, any, Record<string, any>>,
     private url: string,
     private credentials: { username: string; password: string },
   ) {

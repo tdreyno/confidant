@@ -1,6 +1,6 @@
 import fetch from "node-fetch"
 import retry from "async-retry"
-import { Manager, Task } from "./task"
+import { Confidant, Task } from "./task"
 
 export const requestJWT = (
   url: string,
@@ -30,7 +30,7 @@ export abstract class Token<V extends { exp: number }> extends Task<
   V
 > {
   constructor(
-    manager: Manager<TokenContext, any, Record<string, any>>,
+    manager: Confidant<TokenContext, any, Record<string, any>>,
     private tokenRefetchBufferTimeSeconds = 5 * 60, // 5 Minutes
   ) {
     super(manager)

@@ -1,8 +1,8 @@
-import { Manager, Task, TaskMaker } from "./task"
+import { Confidant, Task, TaskMaker } from "./task"
 
 export class Inputs_<C, V> extends Task<C, V> {
   constructor(
-    manager: Manager<C, any, Record<string, any>>,
+    manager: Confidant<C, any, Record<string, any>>,
     private keys: string[],
     private fn: (...values: any[]) => TaskMaker<C, V>,
   ) {
@@ -19,7 +19,7 @@ export class Inputs_<C, V> extends Task<C, V> {
 export const Inputs = (...keys: string[]) => ({
   chain:
     <C, V>(fn: (...values: any[]) => TaskMaker<C, V>) =>
-    (manager: Manager<C, any, Record<string, any>>) =>
+    (manager: Confidant<C, any, Record<string, any>>) =>
       new Inputs_(manager, keys, fn),
 })
 

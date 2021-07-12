@@ -1,9 +1,9 @@
 {
-  "name": "secrets",
-  "version": "1.0.0",
+  "name": "confidant",
+  "version": "0.0.0",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
-  "repository": "https://github.com/tdreyno/secrets.git",
+  "repository": "https://github.com/tdreyno/confidant.git",
   "publishConfig": {
     "access": "public"
   },

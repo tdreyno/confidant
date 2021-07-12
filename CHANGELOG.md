@@ -1,3 +1,3 @@
 # Changelog
 
-[See Github releases](https://github.com/tdreyno/secrets/releases).
+[See Github releases](https://github.com/tdreyno/confidant/releases).

@@ -1,5 +1,5 @@
 import LD from "launchdarkly-node-client-sdk"
-import { Manager, Task, TaskMaker } from "./task"
+import { Confidant, Task, TaskMaker } from "./task"
 
 interface LaunchDarklyContext {
   launchDarklyUser: {
@@ -11,7 +11,7 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
   private client_: LD.LDClient | undefined
 
   constructor(
-    manager: Manager<LaunchDarklyContext, any, Record<string, any>>,
+    manager: Confidant<LaunchDarklyContext, any, Record<string, any>>,
     private launchDarklyKey: string,
     private key: string,
     private defaultValue: T,

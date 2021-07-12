@@ -1,5 +1,5 @@
 import { SecretsManager } from "aws-sdk"
-import { Manager, Task, TaskMaker } from "./task"
+import { Confidant, Task, TaskMaker } from "./task"
 
 interface SecretContext {
   secretsManager: SecretsManager
@@ -7,7 +7,7 @@ interface SecretContext {
 
 class Secret_ extends Task<SecretContext, string> {
   constructor(
-    manager: Manager<SecretContext, any, Record<string, any>>,
+    manager: Confidant<SecretContext, any, Record<string, any>>,
     private key: string,
     private refreshTimeout = Infinity,
   ) {
