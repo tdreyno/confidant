@@ -1,5 +1,5 @@
 import { Confidant, Task } from "../task"
-import { timeout } from "../util"
+import { timeout } from "../../util/index"
 
 const DELAY = 1000
 const TIMEOUT = 5000

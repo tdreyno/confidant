@@ -1,13 +1,13 @@
 import { SecretsManager } from "aws-sdk"
-import { Confidant, Task, TaskMaker } from "./task"
+import { Confidant, Task, TaskMaker } from "../core/task"
 
-interface SecretContext {
+interface AWSSecretContext {
   secretsManager: SecretsManager
 }
 
-class Secret_ extends Task<SecretContext, string> {
+class AWSSecret_ extends Task<AWSSecretContext, string> {
   constructor(
-    manager: Confidant<SecretContext, any, Record<string, any>>,
+    manager: Confidant<AWSSecretContext, any, Record<string, any>>,
     private key: string,
     private refreshTimeout = Infinity,
   ) {
@@ -17,7 +17,7 @@ class Secret_ extends Task<SecretContext, string> {
   initialize(): Promise<string> {
     return this.fetchSecret().then(data => {
       setTimeout(() => {
-        this.fetchSecret().then(value => {
+        void this.fetchSecret().then(value => {
           this.onUpdate(value)
         })
       }, this.refreshTimeout)
@@ -39,15 +39,18 @@ class Secret_ extends Task<SecretContext, string> {
           return reject(`Invalid key: ${this.key}`)
         }
 
-        return resolve(data.SecretString!)
+        return resolve(data.SecretString)
       }),
     )
   }
 }
 
-export const Secret =
-  (key: string, refreshTimeout = Infinity): TaskMaker<SecretContext, string> =>
+export const AWSSecret =
+  (
+    key: string,
+    refreshTimeout = Infinity,
+  ): TaskMaker<AWSSecretContext, string> =>
   context =>
-    new Secret_(context, key, refreshTimeout)
+    new AWSSecret_(context, key, refreshTimeout)
 
-export type Secret = Secret_
+export type AWSSecret = AWSSecret_

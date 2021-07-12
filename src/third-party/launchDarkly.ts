@@ -1,5 +1,5 @@
 import LD from "launchdarkly-node-client-sdk"
-import { Confidant, Task, TaskMaker } from "./task"
+import { Confidant, Task, TaskMaker } from "../core/task"
 
 interface LaunchDarklyContext {
   launchDarklyUser: {
@@ -26,6 +26,7 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
       })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.client_.waitForInitialization().then(() => this.client_!)
   }
 

@@ -1,6 +1,6 @@
 import { decode } from "jsonwebtoken"
-import { Confidant, TaskMaker } from "./task"
-import { requestJWT, Token } from "./token"
+import { Confidant, TaskMaker } from "../core/task"
+import { requestJWT, Token } from "../core/token"
 
 type ViceTokenData = { exp: number }
 export class ViceToken_ extends Token<ViceTokenData> {

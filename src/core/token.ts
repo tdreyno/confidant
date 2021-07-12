@@ -43,7 +43,7 @@ export abstract class Token<V extends { exp: number }> extends Task<
       const delay = Math.max(timeTilExpireSeconds - bufferTime, 0) * 1000
 
       setTimeout(() => {
-        this.retryFetchToken().then(value => this.onUpdate(value))
+        void this.retryFetchToken().then(value => this.onUpdate(value))
       }, delay)
 
       return data
@@ -61,6 +61,7 @@ export abstract class Token<V extends { exp: number }> extends Task<
   abstract decodeToken(token: string): V
 
   getSecondsTilJwtExpires(): number {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { exp } = this.currentValue!
     return Math.floor((exp * 1000 - Date.now()) / 1000)
   }

@@ -1,4 +1,4 @@
-import { timeout } from "./util"
+import { timeout } from "../util/index"
 
 export class Confidant<C, V extends any, H extends Record<string, Task<C, V>>> {
   constructor(public context: C, private handlers: H) {}

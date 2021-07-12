@@ -1,5 +1,5 @@
 {
-  "name": "confidant",
+  "name": "@tdreyno/confidant",
   "version": "0.0.0",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
@@ -15,7 +15,10 @@
     "build": "pika build",
     "test": "jest --runInBand --passWithNoTests",
     "version": "yarn run build",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "coverage": "jest --runInBand --coverage --coverageDirectory '../coverage'",
+    "semantic-release": "semantic-release",
+    "prepare": "husky install"
   },
   "@pika/pack": {
     "pipeline": [
@@ -52,6 +55,10 @@
     "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.28.1",
     "@typescript-eslint/parser": "^4.28.1",
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/github": "^7.2.3",
+    "semantic-release": "^17.4.2",
     "commitizen": "^4.2.4",
     "cz-conventional-changelog": "3.3.0",
     "eslint": "^7.27.0",
@@ -63,6 +70,19 @@
     "prettier": "^2.3.2",
     "ts-jest": "^26.5.6",
     "typescript": "^4.3.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint -c .eslintrc.js --ext .ts --ext .tsx src --fix",
+      "prettier --write"
+    ],
+    "*.{css,md}": [
+      "prettier --write"
+    ]
+  },
+  "volta": {
+    "node": "14.11.0",
+    "yarn": "1.22.4"
   },
   "config": {
     "commitizen": {

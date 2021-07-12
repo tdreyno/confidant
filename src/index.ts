@@ -1,15 +1,15 @@
-import { Secret } from "./secret"
-import { Primative as _ } from "./primative"
-import { LaunchDarkly } from "./launchDarkly"
-import { Inputs } from "./inputs"
-import { ViceToken } from "./viceToken"
+import { AWSSecret } from "./third-party/aws-secret"
+import { Hardcoded as _ } from "./core/hardcoded"
+import { LaunchDarkly } from "./third-party/launchDarkly"
+import { Inputs } from "./core/inputs"
+import { ViceToken } from "./third-party/viceToken"
 
 const DEV = {
   url: _("/dev"),
-  psmServiceAccount: Secret("MyViasat-TSUsage/PSM/serviceAccount"),
-  anotherThing: Secret("MyViasat-TSUsage/PSM/serviceAccount/DEV"),
+  psmServiceAccount: AWSSecret("MyViasat-TSUsage/PSM/serviceAccount"),
+  anotherThing: AWSSecret("MyViasat-TSUsage/PSM/serviceAccount/DEV"),
 
-  launchDarklyKey: Secret("LDKEY FROM AWS"),
+  launchDarklyKey: AWSSecret("LDKEY FROM AWS"),
   featureA: Inputs("launchDarklyKey").chain(
     LaunchDarkly("feature-a", "default-value"),
   ),
@@ -18,7 +18,7 @@ const DEV = {
 const PROD = {
   ...DEV,
   url: _("/prod"),
-  anotherThing: Secret("MyViasat-TSUsage/PSM/serviceAccount/PROD"),
+  anotherThing: AWSSecret("MyViasat-TSUsage/PSM/serviceAccount/PROD"),
 
   viceUrl: _("vice"),
   viceCreds: _({ username: "test", password: "pass" }),

@@ -18,3 +18,9 @@ jobs:
       - run: yarn install --ignore-engines
       - run: yarn test
       - run: yarn build
+      - name: Code Climate Coverage Action
+        uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: 0e025cfbc466290caef3c1871526a7745d29a85daa224ab9fa7786c22eaf9896
+        with:
+          coverageCommand: yarn coverage
