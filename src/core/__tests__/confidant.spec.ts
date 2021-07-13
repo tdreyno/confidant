@@ -23,19 +23,21 @@ class TestTask<T> extends Task<C, T> {
   }
 }
 
-describe("Task", () => {
+describe("Confidant", () => {
   it("should only initialize once", async () => {
     const onInit = jest.fn()
 
-    const task = new TestTask(null as any, 1)
+    const confidant = new Confidant(null as any, {
+      task: new TestTask(null as any, 1),
+    })
 
-    task.onInitialize(onInit)
+    confidant.onInitialize("task", onInit)
 
-    const resultPromiseA = task.runInitialize()
+    const resultPromiseA = confidant.runInitialize("task")
     jest.advanceTimersByTime(DELAY)
     await resultPromiseA
 
-    const resultPromiseB = task.runInitialize()
+    const resultPromiseB = confidant.runInitialize("task")
     jest.advanceTimersByTime(DELAY)
     await resultPromiseB
 
@@ -45,11 +47,13 @@ describe("Task", () => {
   it("should run callbacks onInitialize", async () => {
     const onInit = jest.fn()
 
-    const task = new TestTask(null as any, 1)
+    const confidant = new Confidant(null as any, {
+      task: new TestTask(null as any, 1),
+    })
 
-    task.onInitialize(onInit)
+    confidant.onInitialize("task", onInit)
 
-    const resultPromise = task.runInitialize()
+    const resultPromise = confidant.runInitialize("task")
 
     jest.advanceTimersByTime(DELAY)
 
@@ -59,11 +63,13 @@ describe("Task", () => {
   })
 
   it("should get the value eventually on first run", async () => {
-    const task = new TestTask(null as any, 1)
+    const confidant = new Confidant(null as any, {
+      task: new TestTask(null as any, 1),
+    })
 
-    const resultPromise = task.get()
+    const resultPromise = confidant.get("task")
 
-    void task.runInitialize()
+    void confidant.runInitialize("task")
 
     jest.advanceTimersByTime(DELAY)
 
@@ -73,15 +79,17 @@ describe("Task", () => {
   })
 
   it("should get the value immediately when available", async () => {
-    const task = new TestTask(null as any, 1)
+    const confidant = new Confidant(null as any, {
+      task: new TestTask(null as any, 1),
+    })
 
-    const initPromise = task.runInitialize()
+    const initPromise = confidant.runInitialize("task")
 
     jest.advanceTimersByTime(DELAY)
 
     await initPromise
 
-    const resultPromise = task.get()
+    const resultPromise = confidant.get("task")
 
     jest.advanceTimersByTime(1)
 
@@ -91,9 +99,11 @@ describe("Task", () => {
   })
 
   it("should timeout the get request", async () => {
-    const task = new TestTask(null as any, 1, TIMEOUT + 1)
+    const confidant = new Confidant(null as any, {
+      task: new TestTask(null as any, 1, TIMEOUT + 1),
+    })
 
-    const initPromise = task.runInitialize()
+    const initPromise = confidant.runInitialize("task")
 
     expect.assertions(1)
 
@@ -109,8 +119,4 @@ describe("Task", () => {
 
     expect(onError).toHaveBeenCalled()
   })
-
-  pending("should be able to update")
-  pending("should not allow updating before initialization")
-  pending("should run callbacks onUpdate")
 })

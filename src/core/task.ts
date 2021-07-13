@@ -1,6 +1,6 @@
 import { timeout } from "../util/index"
 
-export class Confidant<C, V extends any, H extends Record<string, Task<C, V>>> {
+export class Confidant<C extends any, H extends Record<string, Task<C, any>>> {
   constructor(public context: C, private handlers: H) {}
 
   onInitialize<K extends keyof H>(
@@ -10,17 +10,17 @@ export class Confidant<C, V extends any, H extends Record<string, Task<C, V>>> {
     this.handlers[key].onInitialize(fn as any)
   }
 
-  get<V2 = unknown>(key: keyof H): Promise<V2> {
+  get<K extends keyof H>(key: K): Promise<TaskResult<H[K]>> {
     if (!this.handlers.hasOwnProperty(key)) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       return Promise.reject(new Error(`Invalid key: ${key}`))
     }
 
-    return this.handlers[key].get() as Promise<V2>
+    return this.handlers[key].get() as Promise<TaskResult<H[K]>>
   }
 
-  initializeTask(task: Task<C, V>): Promise<V> {
-    return task.runInitialize()
+  runInitialize<K extends keyof H>(key: K): Promise<TaskResult<H[K]>> {
+    return this.handlers[key].runInitialize() as Promise<TaskResult<H[K]>>
   }
 }
 
@@ -30,7 +30,7 @@ export abstract class Task<C, V> {
   private listeners: Set<(value: V) => void> = new Set()
 
   constructor(
-    protected manager: Confidant<C, V, Record<string, any>>,
+    protected manager: Confidant<C, Record<string, any>>,
     protected timeout = Infinity,
   ) {}
 
@@ -38,7 +38,6 @@ export abstract class Task<C, V> {
 
   public get(): Promise<V> {
     if (this.hasInitialized) {
-      console.log("cached")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return Promise.resolve(this.currentValue!)
     }
@@ -88,7 +87,7 @@ export const isTask = <C, V>(s: Task<C, V> | unknown): s is Task<C, V> =>
   s instanceof Task
 
 export type TaskMaker<C, V> = (
-  manager: Confidant<C, any, Record<string, any>>,
+  manager: Confidant<C, Record<string, any>>,
 ) => Task<C, V>
 
 export type TaskResult<T extends Task<any, any>> = T extends Task<any, infer V>
