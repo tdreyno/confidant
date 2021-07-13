@@ -119,4 +119,6 @@ describe("Confidant", () => {
 
     expect(onError).toHaveBeenCalled()
   })
+
+  pending("should run callbacks onUpdate")
 })

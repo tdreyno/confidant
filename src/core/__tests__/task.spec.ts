@@ -7,7 +7,7 @@ const TIMEOUT = 5000
 type C = any
 class TestTask<T> extends Task<C, T> {
   constructor(
-    manager: Confidant<C, any, Record<string, any>>,
+    manager: Confidant<C, Record<string, any>>,
     private value: T,
     private delay = DELAY,
   ) {
