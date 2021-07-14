@@ -5,7 +5,7 @@ import { requestJWT, Token } from "../core/token"
 type ViceTokenData = { exp: number }
 export class ViceToken_ extends Token<ViceTokenData> {
   constructor(
-    manager: Confidant<ViceTokenData, any, Record<string, any>>,
+    manager: Confidant<ViceTokenData, Record<string, any>>,
     private url: string,
     private credentials: { username: string; password: string },
   ) {

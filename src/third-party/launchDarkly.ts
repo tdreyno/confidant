@@ -11,7 +11,7 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
   private client_: LD.LDClient | undefined
 
   constructor(
-    manager: Confidant<LaunchDarklyContext, any, Record<string, any>>,
+    manager: Confidant<LaunchDarklyContext, Record<string, any>>,
     private launchDarklyKey: string,
     private key: string,
     private defaultValue: T,

@@ -2,16 +2,16 @@ import { Confidant, Task, TaskMaker } from "./task"
 
 export class Inputs_<C, V> extends Task<C, V> {
   constructor(
-    manager: Confidant<C, any, Record<string, any>>,
+    confidant: Confidant<C, Record<string, any>>,
     private keys: string[],
     private fn: (...values: any[]) => TaskMaker<C, V>,
   ) {
-    super(manager)
+    super(confidant)
   }
 
   initialize(): Promise<V> {
     return Promise.all(this.keys.map(key => this.manager.get(key))).then(
-      results => this.fn(...results)(this.manager).get(),
+      results => this.fn(...results)(this.manager).initialize(),
     )
   }
 }
@@ -19,7 +19,7 @@ export class Inputs_<C, V> extends Task<C, V> {
 export const Inputs = (...keys: string[]) => ({
   chain:
     <C, V>(fn: (...values: any[]) => TaskMaker<C, V>) =>
-    (manager: Confidant<C, any, Record<string, any>>) =>
+    (manager: Confidant<C, Record<string, any>>) =>
       new Inputs_(manager, keys, fn),
 })
 

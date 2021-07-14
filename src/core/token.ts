@@ -30,7 +30,7 @@ export abstract class Token<V extends { exp: number }> extends Task<
   V
 > {
   constructor(
-    manager: Confidant<TokenContext, any, Record<string, any>>,
+    manager: Confidant<TokenContext, Record<string, any>>,
     private tokenRefetchBufferTimeSeconds = 5 * 60, // 5 Minutes
   ) {
     super(manager)

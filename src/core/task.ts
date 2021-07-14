@@ -1,26 +1,40 @@
-import { timeout } from "../util/index"
+import { timeout } from "../util/timeout"
 
-export class Confidant<C extends any, H extends Record<string, Task<C, any>>> {
-  constructor(public context: C, private handlers: H) {}
+export class Confidant<
+  C extends any,
+  Ms extends Record<string, TaskMaker<C, any>>,
+> {
+  tasks: { [K in keyof Ms]: Task<C, TaskMakerResult<Ms[K]>> }
 
-  onInitialize<K extends keyof H>(
-    key: K,
-    fn: (value: TaskResult<H[K]>) => void,
-  ) {
-    this.handlers[key].onInitialize(fn as any)
+  constructor(public context: C, taskMakers: Ms) {
+    this.tasks = Object.entries(taskMakers).reduce((acc: any, [key, maker]) => {
+      acc[key] = maker(this)
+      return acc
+    }, {})
   }
 
-  get<K extends keyof H>(key: K): Promise<TaskResult<H[K]>> {
-    if (!this.handlers.hasOwnProperty(key)) {
+  onInitialize<K extends keyof Ms>(
+    key: K,
+    fn: (value: TaskMakerResult<Ms[K]>) => void,
+  ) {
+    this.tasks[key].onInitialize(fn as any)
+  }
+
+  get<K extends keyof Ms>(key: K): Promise<TaskMakerResult<Ms[K]>> {
+    if (!this.tasks.hasOwnProperty(key)) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       return Promise.reject(new Error(`Invalid key: ${key}`))
     }
 
-    return this.handlers[key].get() as Promise<TaskResult<H[K]>>
+    return this.tasks[key].get()
   }
 
-  runInitialize<K extends keyof H>(key: K): Promise<TaskResult<H[K]>> {
-    return this.handlers[key].runInitialize() as Promise<TaskResult<H[K]>>
+  initialize(): void {
+    Object.keys(this.tasks).map(key => this.tasks[key].runInitialize())
+  }
+
+  runInitialize<K extends keyof Ms>(key: K): Promise<TaskMakerResult<Ms[K]>> {
+    return this.tasks[key].runInitialize()
   }
 }
 
@@ -89,6 +103,9 @@ export const isTask = <C, V>(s: Task<C, V> | unknown): s is Task<C, V> =>
 export type TaskMaker<C, V> = (
   manager: Confidant<C, Record<string, any>>,
 ) => Task<C, V>
+
+export type TaskMakerResult<T extends TaskMaker<any, any>> =
+  T extends TaskMaker<any, infer V> ? V : never
 
 export type TaskResult<T extends Task<any, any>> = T extends Task<any, infer V>
   ? V

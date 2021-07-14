@@ -7,7 +7,7 @@ interface AWSSecretContext {
 
 class AWSSecret_ extends Task<AWSSecretContext, string> {
   constructor(
-    manager: Confidant<AWSSecretContext, any, Record<string, any>>,
+    manager: Confidant<AWSSecretContext, Record<string, any>>,
     private key: string,
     private refreshTimeout = Infinity,
   ) {

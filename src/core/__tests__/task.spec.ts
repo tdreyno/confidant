@@ -1,33 +1,10 @@
-import { Confidant, Task } from "../task"
-import { timeout } from "../../util/index"
-
-const DELAY = 1000
-const TIMEOUT = 5000
-
-type C = any
-class TestTask<T> extends Task<C, T> {
-  constructor(
-    manager: Confidant<C, Record<string, any>>,
-    private value: T,
-    private delay = DELAY,
-  ) {
-    super(manager, TIMEOUT)
-  }
-
-  async initialize(): Promise<T> {
-    try {
-      await timeout(this.delay)
-    } finally {
-      return this.value
-    }
-  }
-}
+import { DELAY, Echo, TIMEOUT } from "./echo"
 
 describe("Task", () => {
   it("should only initialize once", async () => {
     const onInit = jest.fn()
 
-    const task = new TestTask(null as any, 1)
+    const task = Echo(1)(null as any)
 
     task.onInitialize(onInit)
 
@@ -45,7 +22,7 @@ describe("Task", () => {
   it("should run callbacks onInitialize", async () => {
     const onInit = jest.fn()
 
-    const task = new TestTask(null as any, 1)
+    const task = Echo(1)(null as any)
 
     task.onInitialize(onInit)
 
@@ -59,7 +36,7 @@ describe("Task", () => {
   })
 
   it("should get the value eventually on first run", async () => {
-    const task = new TestTask(null as any, 1)
+    const task = Echo(1)(null as any)
 
     const resultPromise = task.get()
 
@@ -73,7 +50,7 @@ describe("Task", () => {
   })
 
   it("should get the value immediately when available", async () => {
-    const task = new TestTask(null as any, 1)
+    const task = Echo(1)(null as any)
 
     const initPromise = task.runInitialize()
 
@@ -91,7 +68,7 @@ describe("Task", () => {
   })
 
   it("should timeout the get request", async () => {
-    const task = new TestTask(null as any, 1, TIMEOUT + 1)
+    const task = Echo(1, TIMEOUT + 1)(null as any)
 
     const initPromise = task.runInitialize()
 

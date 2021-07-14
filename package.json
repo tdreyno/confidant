@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "eslint -c .eslintrc.js --ext .ts src",
     "build": "pika build",
-    "test": "jest --runInBand --passWithNoTests",
+    "test": "jest --runInBand",
     "version": "yarn run build",
     "commit": "git-cz",
     "coverage": "jest --runInBand --coverage --coverageDirectory '../coverage'",
