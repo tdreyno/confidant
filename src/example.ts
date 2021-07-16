@@ -1,8 +1,10 @@
-import { AWSSecret } from "./third-party/awsSecret"
-import { Hardcoded as _ } from "./core/hardcoded"
-import { LaunchDarkly } from "./third-party/launchDarkly"
-import { Inputs } from "./core/inputs"
-import { ViceToken } from "./third-party/viceToken"
+import {
+  AWSSecret,
+  Hardcoded as _,
+  LaunchDarkly,
+  Inputs,
+  ViceToken,
+} from "./index"
 
 const DEV = {
   url: _("/dev"),
