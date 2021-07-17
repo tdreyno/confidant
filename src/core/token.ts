@@ -17,7 +17,7 @@ export const requestJWT = (
     .then(res => res.text())
     .then(token => {
       if (token === "") {
-        return Promise.reject(new Error(`Bad token.`))
+        return Promise.reject(new Error("Empty token"))
       }
 
       return token
@@ -38,7 +38,7 @@ export abstract class Token<V extends { exp: number }> extends Task<
 
   initialize(): Promise<V> {
     return this.retryFetchToken().then(data => {
-      const timeTilExpireSeconds = this.getSecondsTilJwtExpires()
+      const timeTilExpireSeconds = this.getSecondsTilJwtExpires(data.exp)
       const bufferTime = this.tokenRefetchBufferTimeSeconds ?? 0
       const delay = Math.max(timeTilExpireSeconds - bufferTime, 0) * 1000
 
@@ -60,9 +60,7 @@ export abstract class Token<V extends { exp: number }> extends Task<
 
   abstract decodeToken(token: string): V
 
-  getSecondsTilJwtExpires(): number {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { exp } = this.currentValue!
+  getSecondsTilJwtExpires(exp: number): number {
     return Math.floor((exp * 1000 - Date.now()) / 1000)
   }
 }
