@@ -41,10 +41,11 @@ export class Confidant<
 export abstract class Task<C, V> {
   private hasInitialized = false
   protected currentValue: V | undefined
-  private listeners: Set<(value: V) => void> = new Set()
+  private initListeners: Set<(value: V) => void> = new Set()
+  private updateListeners: Set<(value: V) => void> = new Set()
 
   constructor(
-    protected manager: Confidant<C, Record<string, any>>,
+    protected confidant: Confidant<C, Record<string, any>>,
     protected timeout = Infinity,
   ) {}
 
@@ -62,17 +63,23 @@ export abstract class Task<C, V> {
   }
 
   public onInitialize(fn: (value: V) => void): () => void {
-    this.listeners.add(fn)
-    return () => this.listeners.delete(fn)
+    this.initListeners.add(fn)
+    return () => this.initListeners.delete(fn)
   }
 
-  onUpdate(newValue: V) {
-    if (this.currentValue === newValue) {
+  public onUpdate(fn: (value: V) => void): () => void {
+    this.updateListeners.add(fn)
+    return () => this.updateListeners.delete(fn)
+  }
+
+  update(value: V) {
+    if (this.currentValue === value) {
       return
     }
 
-    this.currentValue = newValue
-    // TODO: Notify
+    this.currentValue = value
+
+    this.updateListeners.forEach(listener => listener(value))
   }
 
   public runInitialize(): Promise<V> {
@@ -83,17 +90,13 @@ export abstract class Task<C, V> {
 
     return Promise.race([timeout<V>(this.timeout), this.initialize()]).then(
       value => {
-        this.didInitialize(value)
+        this.hasInitialized = true
+        this.currentValue = value
+        this.initListeners.forEach(listener => listener(value))
 
         return value
       },
     )
-  }
-
-  private didInitialize(value: V) {
-    this.hasInitialized = true
-    this.currentValue = value
-    this.listeners.forEach(listener => listener(value))
   }
 }
 

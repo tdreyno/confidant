@@ -18,7 +18,7 @@ class AWSSecret_ extends Task<AWSSecretContext, string> {
     return this.fetchSecret().then(data => {
       setTimeout(() => {
         void this.fetchSecret().then(value => {
-          this.onUpdate(value)
+          this.update(value)
         })
       }, this.refreshTimeout)
 
@@ -27,7 +27,7 @@ class AWSSecret_ extends Task<AWSSecretContext, string> {
   }
 
   private fetchSecret(): Promise<string> {
-    const { secretsManager } = this.manager.context
+    const { secretsManager } = this.confidant.context
 
     return new Promise((resolve, reject) =>
       secretsManager.getSecretValue({ SecretId: this.key }, (err, data) => {

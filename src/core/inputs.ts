@@ -10,8 +10,8 @@ export class Inputs_<C, V> extends Task<C, V> {
   }
 
   initialize(): Promise<V> {
-    return Promise.all(this.keys.map(key => this.manager.get(key))).then(
-      results => this.fn(...results)(this.manager).initialize(),
+    return Promise.all(this.keys.map(key => this.confidant.get(key))).then(
+      results => this.fn(...results)(this.confidant).initialize(),
     )
   }
 }

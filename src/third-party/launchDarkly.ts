@@ -21,9 +21,13 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
 
   getClient(key: string): Promise<LD.LDClient> {
     if (!this.client_) {
-      this.client_ = LD.initialize(key, this.manager.context.launchDarklyUser, {
-        streaming: true,
-      })
+      this.client_ = LD.initialize(
+        key,
+        this.confidant.context.launchDarklyUser,
+        {
+          streaming: true,
+        },
+      )
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -33,7 +37,7 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
   initialize(): Promise<T> {
     return this.getClient(this.launchDarklyKey).then(client => {
       client.on("change", () => {
-        this.onUpdate(client.variation(this.key, this.defaultValue))
+        this.update(client.variation(this.key, this.defaultValue))
       })
 
       return client.variation(this.key, this.defaultValue)

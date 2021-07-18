@@ -1,20 +1,21 @@
 import { decode } from "jsonwebtoken"
 import { Confidant, TaskMaker } from "../core/task"
-import { requestJWT, Token } from "../core/token"
+import { requestJWT } from "../core/tokenManager"
+import { Token } from "../core/token"
 
 type ViceTokenData = { exp: number }
 export class ViceToken_ extends Token<ViceTokenData> {
   constructor(
-    manager: Confidant<ViceTokenData, Record<string, any>>,
+    confidant: Confidant<ViceTokenData, Record<string, any>>,
     private url: string,
     private credentials: { username: string; password: string },
   ) {
-    super(manager, 5 * 60 /* 5 Minutes */)
+    super(confidant)
   }
 
   fetchToken(): Promise<string> {
     const { username, password } = this.credentials
-    return requestJWT(this.url, username, password)
+    return requestJWT(this.url, username, password, this.manager)
   }
 
   decodeToken(token: string): ViceTokenData {
