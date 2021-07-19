@@ -40,6 +40,26 @@ describe("Confidant", () => {
     expect(onInit).toBeCalledWith(1)
   })
 
+  it("should initialize all tasks at once", async () => {
+    const confidant = new Confidant(null as any, {
+      task1: Echo(1, 25),
+      task2: Echo(2, 5),
+      task3: Echo(3, 15),
+    })
+
+    const resultPromise = confidant.initialize()
+
+    jest.advanceTimersByTime(25)
+
+    const results = await resultPromise
+
+    expect(results).toMatchObject({
+      task1: 1,
+      task2: 2,
+      task3: 3,
+    })
+  })
+
   it("should get the value eventually on first run", async () => {
     const confidant = new Confidant(null as any, {
       task: Echo(1),
@@ -106,5 +126,26 @@ describe("Confidant", () => {
     )
   })
 
-  pending("should run callbacks onUpdate")
+  it("should run callbacks onUpdate", async () => {
+    const onUpdate = jest.fn()
+
+    const confidant = new Confidant(null as any, {
+      task1: Echo(5),
+    })
+
+    confidant.onUpdate("task1", onUpdate)
+
+    const resultPromise = confidant.runInitialize("task1")
+
+    jest.advanceTimersByTime(DELAY)
+
+    await resultPromise
+
+    confidant.tasks.task1.update(n => n * 2)
+
+    const result = await confidant.get("task1")
+
+    expect(result).toBe(10)
+    expect(onUpdate).toBeCalledWith(10)
+  })
 })

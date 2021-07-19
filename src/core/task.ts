@@ -20,6 +20,13 @@ export class Confidant<
     this.tasks[key].onInitialize(fn as any)
   }
 
+  onUpdate<K extends keyof Ms>(
+    key: K,
+    fn: (value: TaskMakerResult<Ms[K]>) => void,
+  ) {
+    this.tasks[key].onUpdate(fn as any)
+  }
+
   get<K extends keyof Ms>(key: K): Promise<TaskMakerResult<Ms[K]>> {
     if (!this.tasks.hasOwnProperty(key)) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -29,8 +36,19 @@ export class Confidant<
     return this.tasks[key].get()
   }
 
-  initialize(): void {
-    Object.keys(this.tasks).map(key => this.tasks[key].runInitialize())
+  async initialize<
+    R extends {
+      [K in keyof Ms]: TaskMakerResult<Ms[K]>
+    },
+  >(): Promise<R> {
+    const results = await Promise.all(
+      Object.values(this.tasks).map(task => task.runInitialize()),
+    )
+
+    return Object.keys(this.tasks).reduce((acc, key: keyof Ms, i) => {
+      acc[key] = results[i]
+      return acc
+    }, {} as R)
   }
 
   runInitialize<K extends keyof Ms>(key: K): Promise<TaskMakerResult<Ms[K]>> {
@@ -91,10 +109,10 @@ export abstract class Task<C, V> {
     this.set(fn(this.currentValue!))
   }
 
-  public runInitialize(): Promise<V> {
+  public async runInitialize(): Promise<V> {
     if (this.hasInitialized) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return Promise.resolve(this.currentValue!)
+      return this.currentValue!
     }
 
     return Promise.race([timeout<V>(this.timeout), this.initialize()]).then(
@@ -108,9 +126,6 @@ export abstract class Task<C, V> {
     )
   }
 }
-
-export const isTask = <C, V>(s: Task<C, V> | unknown): s is Task<C, V> =>
-  s instanceof Task
 
 export type TaskMaker<C, V> = (
   manager: Confidant<C, Record<string, any>>,

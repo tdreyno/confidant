@@ -104,6 +104,23 @@ describe("Task", () => {
     expect(onUpdate).toBeCalledWith(5)
   })
 
+  it("should not trigger callback if new values is the same as the old", async () => {
+    const onUpdate = jest.fn()
+
+    const task = Echo(1)(null as any)
+
+    const resultPromise = task.runInitialize()
+
+    jest.advanceTimersByTime(DELAY)
+
+    await resultPromise
+
+    task.onUpdate(onUpdate)
+    task.set(1)
+
+    expect(onUpdate).not.toBeCalledWith(5)
+  })
+
   it("should be able to update new value", async () => {
     const onUpdate = jest.fn()
 
