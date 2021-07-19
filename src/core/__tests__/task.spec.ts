@@ -87,7 +87,51 @@ describe("Task", () => {
     expect(onError).toHaveBeenCalled()
   })
 
-  pending("should be able to update")
-  pending("should not allow updating before initialization")
-  pending("should run callbacks onUpdate")
+  it("should be able to set new value", async () => {
+    const onUpdate = jest.fn()
+
+    const task = Echo(1)(null as any)
+
+    const resultPromise = task.runInitialize()
+
+    jest.advanceTimersByTime(DELAY)
+
+    await resultPromise
+
+    task.onUpdate(onUpdate)
+    task.set(5)
+
+    expect(onUpdate).toBeCalledWith(5)
+  })
+
+  it("should be able to update new value", async () => {
+    const onUpdate = jest.fn()
+
+    const task = Echo(2)(null as any)
+
+    const resultPromise = task.runInitialize()
+
+    jest.advanceTimersByTime(DELAY)
+
+    await resultPromise
+
+    task.onUpdate(onUpdate)
+    task.update(x => x * 5)
+
+    expect(onUpdate).toBeCalledWith(10)
+  })
+
+  it("should not allow setting before initialization", async () => {
+    const onUpdate = jest.fn()
+
+    const task = Echo(2)(null as any)
+
+    task.onUpdate(onUpdate)
+
+    expect(() => task.set(5)).toThrowError(
+      "Cannot set Task value before initialization",
+    )
+
+    expect(onUpdate).not.toHaveBeenCalled()
+  })
 })

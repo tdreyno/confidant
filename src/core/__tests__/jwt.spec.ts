@@ -1,7 +1,7 @@
 import { rest } from "msw"
 import jwt from "jsonwebtoken"
 import Singleton, { requestJWT } from "../tokenManager"
-import { Token } from "../token"
+import { JWT } from "../jwt"
 import { Confidant } from "../task"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -55,12 +55,7 @@ describe("Token", () => {
       }),
     )
 
-    type TestTokenData = { exp: number; hello: string }
-    class TestToken extends Token<TestTokenData> {
-      constructor(manager: Confidant<TestTokenData, Record<string, any>>) {
-        super(manager)
-      }
-
+    class TestToken extends JWT<any> {
       fetchToken(): Promise<string> {
         return requestJWT(URL, "username", "password")
       }
@@ -83,18 +78,12 @@ describe("Token", () => {
     )
 
     type TestTokenData = { exp: number; num: number }
-    class TestToken extends Token<TestTokenData> {
-      constructor(manager: Confidant<TestTokenData, Record<string, any>>) {
-        super(manager)
-      }
-
+    class TestToken extends JWT<TestTokenData> {
       fetchToken(): Promise<string> {
         return requestJWT(URL, "username", "password")
       }
 
-      decodeToken(token: string): TestTokenData {
-        const decoded = jwt.decode(token) as Record<string, unknown>
-
+      validateToken(decoded: Record<string, unknown>): TestTokenData {
         return {
           ...decoded,
           num: parseInt((decoded.num as string) ?? "0", 10),
@@ -125,21 +114,18 @@ describe("Token", () => {
       }),
     )
 
-    type TestTokenData = { exp: number; num: string }
-    class TestToken extends Token<TestTokenData> {
-      constructor(manager: Confidant<TestTokenData, Record<string, any>>) {
-        super(manager)
-      }
-
+    class TestToken extends JWT<any> {
       fetchToken(): Promise<string> {
-        return requestJWT(URL, "username", "password", this.manager, {
-          notifyOnExpiry: () => {
-            this.manager.remove(URL, "username", "password")
+        const notifyOnExpiry = () => {
+          this.manager.remove(URL, "username", "password")
 
-            void this.fetchTokenAndDecode().then(token => {
-              this.update(token)
-            })
-          },
+          void this.fetchTokenAndDecode().then(token => {
+            this.set(token)
+          })
+        }
+
+        return requestJWT(URL, "username", "password", this.manager, {
+          notifyOnExpiry,
         })
       }
     }
@@ -210,7 +196,7 @@ describe("Token", () => {
     )
 
     type TestTokenData = { exp: number; num: string }
-    class TestToken extends Token<TestTokenData> {
+    class TestToken extends JWT<TestTokenData> {
       constructor(manager: Confidant<TestTokenData, Record<string, any>>) {
         super(manager)
       }
@@ -252,12 +238,7 @@ describe("Token", () => {
       }),
     )
 
-    type TestTokenData = { exp: number; num: string }
-    class TestToken extends Token<TestTokenData> {
-      constructor(manager: Confidant<TestTokenData, Record<string, any>>) {
-        super(manager)
-      }
-
+    class TestToken extends JWT<any> {
       fetchToken(): Promise<string> {
         return requestJWT(URL, "username", "password", this.manager, {
           retry: {

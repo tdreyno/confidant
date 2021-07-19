@@ -7,29 +7,35 @@ function getSecondsTilJwtExpires(exp: number): number {
   return Math.floor((exp * 1000 - Date.now()) / 1000)
 }
 
-export class TokenManager {
-  private cache: {
-    [url: string]: {
-      [username: string]: {
-        [password: string]: string
-      }
+type ThreeLevelCache = {
+  [url: string]: {
+    [username: string]: {
+      [password: string]: string
     }
-  } = {}
+  }
+}
+
+export class TokenManager {
+  private cache: ThreeLevelCache = {}
 
   constructor(
     private tokenRefetchBufferTimeSeconds = 5 * 60, // 5 Minutes
   ) {}
 
-  clear() {
+  clear(): void {
     this.cache = {}
   }
 
-  get(url: string, username: string, password: string) {
-    return this.cache[url]
-      ? this.cache[url][username]
-        ? this.cache[url][username][password]
-        : null
-      : null
+  get(url: string, username: string, password: string): string | undefined {
+    if (
+      !this.cache[url] ||
+      !this.cache[url][username] ||
+      !this.cache[url][username][password]
+    ) {
+      return
+    }
+
+    return this.cache[url][username][password]
   }
 
   set(
@@ -38,7 +44,7 @@ export class TokenManager {
     password: string,
     token: string,
     notifyOnExpiry?: () => void,
-  ) {
+  ): void {
     if (this.isExpired(token)) {
       console.warn("Do not add expired tokens")
 
@@ -68,12 +74,8 @@ export class TokenManager {
     }
   }
 
-  remove(url: string, username: string, password: string) {
-    if (!this.cache[url]) {
-      return
-    }
-
-    if (!this.cache[url][username]) {
+  remove(url: string, username: string, password: string): void {
+    if (!this.cache[url] || !this.cache[url][username]) {
       return
     }
 
@@ -97,17 +99,13 @@ export class TokenManager {
   private isExpired(token: string): boolean {
     const delay = this.nextRefreshTime(token)
 
-    if (!isFinite(delay)) {
-      return false
-    }
-
-    return delay < 0
+    return isFinite(delay) && delay < 0
   }
 }
 
 const SINGLETON = new TokenManager()
 
-export const requestJWT = (
+export const requestJWT = async (
   url: string,
   username: string,
   password: string,
@@ -121,11 +119,11 @@ export const requestJWT = (
     const hit = manager.get(url, username, password)
 
     if (hit) {
-      return Promise.resolve(hit)
+      return hit
     }
   }
 
-  return retry(async () => {
+  const executeFetch = async () => {
     const res = await fetch(url, {
       method: "post",
       body: JSON.stringify({
@@ -139,25 +137,27 @@ export const requestJWT = (
     }
 
     return res.text()
-  }, options.retry)
-    .then(token => {
-      if (token === "") {
-        return Promise.reject(new Error("Empty token"))
-      }
+  }
 
-      if (manager) {
-        manager.set(url, username, password, token, options.notifyOnExpiry)
-      }
+  try {
+    const token = await retry(executeFetch, options.retry)
 
-      return token
-    })
-    .catch(e => {
-      if (manager) {
-        manager.remove(url, username, password)
-      }
+    if (token === "") {
+      return Promise.reject(new Error("Empty token"))
+    }
 
-      return Promise.reject(e)
-    })
+    if (manager) {
+      manager.set(url, username, password, token, options.notifyOnExpiry)
+    }
+
+    return token
+  } catch (e) {
+    if (manager) {
+      manager.remove(url, username, password)
+    }
+
+    return Promise.reject(e)
+  }
 }
 
 export default SINGLETON

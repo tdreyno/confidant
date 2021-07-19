@@ -1,10 +1,9 @@
-import { decode } from "jsonwebtoken"
 import { Confidant, TaskMaker } from "../core/task"
 import { requestJWT } from "../core/tokenManager"
-import { Token } from "../core/token"
+import { JWT } from "../core/jwt"
 
 type ViceTokenData = { exp: number }
-export class ViceToken_ extends Token<ViceTokenData> {
+export class ViceToken_ extends JWT<ViceTokenData> {
   constructor(
     confidant: Confidant<ViceTokenData, Record<string, any>>,
     private url: string,
@@ -16,11 +15,6 @@ export class ViceToken_ extends Token<ViceTokenData> {
   fetchToken(): Promise<string> {
     const { username, password } = this.credentials
     return requestJWT(this.url, username, password, this.manager)
-  }
-
-  decodeToken(token: string): ViceTokenData {
-    // TODO: Actually validate the data is correct
-    return decode(token) as unknown as ViceTokenData
   }
 }
 

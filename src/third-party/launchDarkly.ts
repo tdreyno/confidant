@@ -37,7 +37,7 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
   initialize(): Promise<T> {
     return this.getClient(this.launchDarklyKey).then(client => {
       client.on("change", () => {
-        this.update(client.variation(this.key, this.defaultValue))
+        this.set(client.variation(this.key, this.defaultValue))
       })
 
       return client.variation(this.key, this.defaultValue)

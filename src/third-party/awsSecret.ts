@@ -18,7 +18,7 @@ class AWSSecret_ extends Task<AWSSecretContext, string> {
     return this.fetchSecret().then(data => {
       setTimeout(() => {
         void this.fetchSecret().then(value => {
-          this.update(value)
+          this.set(value)
         })
       }, this.refreshTimeout)
 

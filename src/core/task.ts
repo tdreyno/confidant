@@ -72,7 +72,11 @@ export abstract class Task<C, V> {
     return () => this.updateListeners.delete(fn)
   }
 
-  update(value: V) {
+  set(value: V): void {
+    if (!this.hasInitialized) {
+      throw new Error("Cannot set Task value before initialization")
+    }
+
     if (this.currentValue === value) {
       return
     }
@@ -80,6 +84,11 @@ export abstract class Task<C, V> {
     this.currentValue = value
 
     this.updateListeners.forEach(listener => listener(value))
+  }
+
+  update(fn: (currentValue: V) => V): void {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.set(fn(this.currentValue!))
   }
 
   public runInitialize(): Promise<V> {

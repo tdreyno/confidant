@@ -9,7 +9,7 @@ class Echo_<T> extends Task<EchoContext, T> {
   constructor(
     manager: Confidant<EchoContext, Record<string, any>>,
     private value: T,
-    private delay = DELAY,
+    private delay: number,
   ) {
     super(manager, TIMEOUT)
   }

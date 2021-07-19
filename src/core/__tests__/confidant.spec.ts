@@ -98,5 +98,13 @@ describe("Confidant", () => {
     expect(onError).toHaveBeenCalled()
   })
 
+  it("should error when getting an invalid key", async () => {
+    const confidant = new Confidant(null as any, {})
+
+    await expect(() => (confidant.get as any)("fake")).rejects.toBeInstanceOf(
+      Error,
+    )
+  })
+
   pending("should run callbacks onUpdate")
 })
