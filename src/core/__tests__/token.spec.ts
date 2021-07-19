@@ -132,12 +132,14 @@ describe("Token", () => {
       }
 
       fetchToken(): Promise<string> {
-        return requestJWT(URL, "username", "password", this.manager, () => {
-          this.manager.remove(URL, "username", "password")
+        return requestJWT(URL, "username", "password", this.manager, {
+          notifyOnExpiry: () => {
+            this.manager.remove(URL, "username", "password")
 
-          void this.retryFetchToken().then(token => {
-            this.update(token)
-          })
+            void this.fetchTokenAndDecode().then(token => {
+              this.update(token)
+            })
+          },
         })
       }
     }
@@ -168,6 +170,112 @@ describe("Token", () => {
     expect(resultB).toMatchObject({ num: "2" })
   })
 
-  pending("should retry failed requests")
-  pending("should eventually error if retry fails")
+  it("should retry failed requests", async () => {
+    jest.useRealTimers()
+    const URL = "http://test/get-token"
+
+    const getToken = (num: number) => jwt.sign({ num }, "secret")
+
+    const values = [500, 400, 200]
+
+    const on500 = jest.fn()
+    const on400 = jest.fn()
+    const on200 = jest.fn()
+    const onRetry = jest.fn()
+
+    server.use(
+      rest.post(URL, async (_req, res, ctx) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const status = values.shift()!
+
+        switch (status) {
+          case 500:
+            on500()
+            break
+
+          case 400:
+            on400()
+            break
+
+          case 200:
+            on200()
+            break
+        }
+
+        return res(
+          ctx.status(status),
+          ctx.text(status === 200 ? getToken(5) : "Error"),
+        )
+      }),
+    )
+
+    type TestTokenData = { exp: number; num: string }
+    class TestToken extends Token<TestTokenData> {
+      constructor(manager: Confidant<TestTokenData, Record<string, any>>) {
+        super(manager)
+      }
+
+      fetchToken(): Promise<string> {
+        return requestJWT(URL, "username", "password", this.manager, {
+          retry: {
+            randomize: false,
+            minTimeout: 100,
+            onRetry,
+          },
+        })
+      }
+    }
+
+    const task = new TestToken(null as any)
+    const promiseA = task.runInitialize()
+
+    const resultA = await promiseA
+    expect(resultA).toMatchObject({ num: 5 })
+
+    expect(on500).toHaveBeenCalledTimes(1)
+    expect(on400).toHaveBeenCalledTimes(1)
+    expect(on200).toHaveBeenCalledTimes(1)
+    expect(onRetry).toHaveBeenCalledTimes(2)
+
+    jest.useFakeTimers()
+  })
+
+  it("should retry failed requests but eventually fail", async () => {
+    jest.useRealTimers()
+    const URL = "http://test/get-token"
+
+    const onRetry = jest.fn()
+
+    server.use(
+      rest.post(URL, async (_req, res, ctx) => {
+        return res(ctx.status(500), ctx.text("Error"))
+      }),
+    )
+
+    type TestTokenData = { exp: number; num: string }
+    class TestToken extends Token<TestTokenData> {
+      constructor(manager: Confidant<TestTokenData, Record<string, any>>) {
+        super(manager)
+      }
+
+      fetchToken(): Promise<string> {
+        return requestJWT(URL, "username", "password", this.manager, {
+          retry: {
+            randomize: false,
+            retries: 3,
+            minTimeout: 100,
+            onRetry,
+          },
+        })
+      }
+    }
+
+    const task = new TestToken(null as any)
+    const promiseA = task.runInitialize()
+
+    await expect(() => promiseA).rejects.toBeInstanceOf(Error)
+    expect(onRetry).toHaveBeenCalledTimes(3)
+
+    jest.useFakeTimers()
+  })
 })

@@ -1,5 +1,7 @@
 import fetch from "node-fetch"
 import jwt from "jsonwebtoken"
+import retry from "async-retry"
+import AsyncRetry from "async-retry"
 
 function getSecondsTilJwtExpires(exp: number): number {
   return Math.floor((exp * 1000 - Date.now()) / 1000)
@@ -110,7 +112,10 @@ export const requestJWT = (
   username: string,
   password: string,
   manager: TokenManager | false = SINGLETON,
-  notifyOnExpiry?: () => void,
+  options: {
+    notifyOnExpiry?: () => void
+    retry?: AsyncRetry.Options
+  } = {},
 ): Promise<string> => {
   if (manager) {
     const hit = manager.get(url, username, password)
@@ -120,21 +125,28 @@ export const requestJWT = (
     }
   }
 
-  return fetch(url, {
-    method: "post",
-    body: JSON.stringify({
-      auth: { username, password },
-    }),
-    headers: { "Content-Type": "application/json" },
-  })
-    .then(res => res.text())
+  return retry(async () => {
+    const res = await fetch(url, {
+      method: "post",
+      body: JSON.stringify({
+        auth: { username, password },
+      }),
+      headers: { "Content-Type": "application/json" },
+    })
+
+    if (200 !== res.status) {
+      throw new Error(`Error: ${res.status}`)
+    }
+
+    return res.text()
+  }, options.retry)
     .then(token => {
       if (token === "") {
         return Promise.reject(new Error("Empty token"))
       }
 
       if (manager) {
-        manager.set(url, username, password, token, notifyOnExpiry)
+        manager.set(url, username, password, token, options.notifyOnExpiry)
       }
 
       return token

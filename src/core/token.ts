@@ -1,4 +1,3 @@
-import retry from "async-retry"
 import jwt from "jsonwebtoken"
 import Singleton from "./tokenManager"
 import { Confidant, Task } from "./task"
@@ -17,13 +16,11 @@ export abstract class Token<V extends { exp: number }> extends Task<
   }
 
   initialize(): Promise<V> {
-    return this.retryFetchToken()
+    return this.fetchTokenAndDecode()
   }
 
-  protected retryFetchToken() {
-    return retry(() =>
-      this.fetchToken().then((token: string) => this.decodeToken(token)),
-    )
+  protected fetchTokenAndDecode() {
+    return this.fetchToken().then((token: string) => this.decodeToken(token))
   }
 
   abstract fetchToken(): Promise<string>
