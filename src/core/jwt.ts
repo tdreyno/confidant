@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken"
-import Singleton from "./tokenManager"
+import { decode } from "jsonwebtoken"
+import Singleton from "./jwtManager"
 import { Confidant, Task } from "./task"
 
 type JWTContext = any
@@ -16,22 +16,24 @@ export abstract class JWT<V extends { exp: number }> extends Task<
   }
 
   initialize(): Promise<V> {
-    return this.fetchTokenAndDecode()
+    return this.fetchJWTAndDecode()
   }
 
-  protected fetchTokenAndDecode() {
-    return this.fetchToken()
-      .then(token => this.decodeToken(token))
-      .then(data => this.validateToken(data))
+  protected async fetchJWTAndDecode(): Promise<V> {
+    const jwt = await this.fetchJWT()
+
+    const data = this.decodeJWT(jwt)
+
+    return this.validateJWTData(data)
   }
 
-  abstract fetchToken(): Promise<string>
+  abstract fetchJWT(): Promise<string>
 
-  protected decodeToken(token: string): Record<string, unknown> {
-    return jwt.decode(token) as Record<string, unknown>
+  protected decodeJWT(jwt: string): Record<string, unknown> {
+    return decode(jwt) as Record<string, unknown>
   }
 
-  validateToken(data: Record<string, unknown>): V {
+  validateJWTData(data: Record<string, unknown>): V {
     return data as unknown as V
   }
 }

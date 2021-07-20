@@ -115,15 +115,16 @@ export abstract class Task<C, V> {
       return this.currentValue!
     }
 
-    return Promise.race([timeout<V>(this.timeout), this.initialize()]).then(
-      value => {
-        this.hasInitialized = true
-        this.currentValue = value
-        this.initListeners.forEach(listener => listener(value))
+    const value = await Promise.race([
+      timeout<V>(this.timeout),
+      this.initialize(),
+    ])
 
-        return value
-      },
-    )
+    this.hasInitialized = true
+    this.currentValue = value
+    this.initListeners.forEach(listener => listener(value))
+
+    return value
   }
 }
 

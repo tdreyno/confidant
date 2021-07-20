@@ -1,5 +1,5 @@
 import { Confidant, TaskMaker } from "../core/task"
-import { requestJWT } from "../core/tokenManager"
+import { requestJWT } from "../core/jwtManager"
 import { JWT } from "../core/jwt"
 
 type ViceTokenData = { exp: number }
@@ -12,7 +12,7 @@ export class ViceToken_ extends JWT<ViceTokenData> {
     super(confidant)
   }
 
-  fetchToken(): Promise<string> {
+  fetchJWT(): Promise<string> {
     const { username, password } = this.credentials
     return requestJWT(this.url, username, password, this.manager)
   }
