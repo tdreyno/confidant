@@ -1,10 +1,12 @@
+import { SecretsManager } from "aws-sdk"
 import {
   AWSSecret,
   Hardcoded as _,
   LaunchDarkly,
   Inputs,
-  ViceToken,
-} from "./index"
+  AWSManager,
+} from "../index"
+import { ViceToken } from "./viceToken"
 
 const DEV = {
   url: _("/dev"),
@@ -28,6 +30,9 @@ const PROD = {
 }
 
 console.log(PROD)
+const secretsManager = new SecretsManager({ region: "ap-south-1" })
+new AWSManager(secretsManager)
+
 // const result = await getEnvironment(PROD, {
 //   secretsManager: new SecretsManager({ region: "ap-south-1" }),
 // })

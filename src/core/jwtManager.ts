@@ -126,17 +126,7 @@ export class JWTManager {
     const now = Date.now()
     const timeTilExpireSeconds = jwtData.exp * 1000 - now
     const bufferTime = this.refetchBufferTimeMs ?? 0
-    const delay = timeTilExpireSeconds - bufferTime
-
-    // console.log(
-    //   jwtData.exp * 1000,
-    //   now,
-    //   timeTilExpireSeconds,
-    //   bufferTime,
-    //   delay,
-    // )
-
-    return delay
+    return timeTilExpireSeconds - bufferTime
   }
 
   public isExpired(jwt: string): boolean {
