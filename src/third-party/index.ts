@@ -1,2 +1,2 @@
-export * from "./awsSecret"
+export * from "./awsSecret/index"
 export * from "./launchDarkly"

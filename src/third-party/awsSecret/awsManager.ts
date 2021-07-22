@@ -1,6 +1,5 @@
 import { SecretsManager } from "aws-sdk"
 import ms from "ms"
-import { Confidant, Task, TaskMaker } from "../core/task"
 
 type KeyCache = {
   [key: string]: {
@@ -86,43 +85,3 @@ export class AWSManager {
     )
   }
 }
-
-interface AWSSecretContext {
-  awsManager: AWSManager
-}
-
-class AWSSecret_ extends Task<AWSSecretContext, string> {
-  constructor(
-    confidant: Confidant<AWSSecretContext, Record<string, any>>,
-    private key: string,
-  ) {
-    super(confidant)
-  }
-
-  async initialize(): Promise<string> {
-    const { awsManager } = this.confidant.context
-
-    return awsManager.fetch(this.key, () => {
-      void this.fetch()
-    })
-  }
-
-  async fetch(): Promise<string> {
-    const { awsManager } = this.confidant.context
-
-    const value = await awsManager.fetch(this.key, () => {
-      void this.fetch()
-    })
-
-    this.set(value)
-
-    return value
-  }
-}
-
-export const AWSSecret =
-  (key: string): TaskMaker<AWSSecretContext, string> =>
-  context =>
-    new AWSSecret_(context, key)
-
-export type AWSSecret = AWSSecret_

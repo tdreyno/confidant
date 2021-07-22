@@ -1,10 +1,11 @@
 import AWS from "aws-sdk"
-import { Confidant } from "../../core/task"
-import { AWSSecret, AWSManager } from "../awsSecret"
+import { Confidant } from "../../../core/task"
+import { AWSJSONSecret } from "../awsJSONSecret"
+import { AWSManager } from "../awsManager"
 
 const mockGetSecretValue = jest.fn(
   ({ SecretId }: { SecretId: string }, callback) => {
-    callback(null, { SecretString: `TEST-${SecretId}` })
+    callback(null, { SecretString: JSON.stringify({ key: SecretId }) })
   },
 )
 
@@ -27,7 +28,7 @@ jest.mock("aws-sdk", () => {
 const secretsManager = new AWS.SecretsManager({ region: "test" })
 const awsManager = new AWSManager(secretsManager)
 
-describe("AWSSecret", () => {
+describe("AWSJSONSecret", () => {
   beforeEach(() => {
     awsManager.clear()
   })
@@ -35,16 +36,43 @@ describe("AWSSecret", () => {
   it("should fetch from aws", async () => {
     mockGetSecretValue.mockImplementationOnce(
       ({ SecretId }: { SecretId: string }, callback) => {
-        callback(null, { SecretString: `SUCCESS-${SecretId}` })
+        callback(null, {
+          SecretString: JSON.stringify({ key: `SUCCESS-${SecretId}` }),
+        })
       },
     )
 
     const key = "test-key"
-    const confidant = Confidant({ awsManager }, { [key]: AWSSecret(key) })
+    const confidant = Confidant({ awsManager }, { [key]: AWSJSONSecret(key) })
 
     const resultA = await confidant.runInitialize(key)
 
-    expect(resultA).toBe(`SUCCESS-${key}`)
+    expect(resultA).toMatchObject({ key: `SUCCESS-${key}` })
+  })
+
+  it("should allow custom validation", async () => {
+    mockGetSecretValue.mockImplementationOnce(
+      ({ SecretId }: { SecretId: string }, callback) => {
+        callback(null, {
+          SecretString: JSON.stringify({ key: `SUCCESS-${SecretId}` }),
+        })
+      },
+    )
+
+    const key = "test-key"
+
+    type Data = { key: string }
+
+    const validate = (data: unknown): Data => data as Data
+
+    const confidant = Confidant(
+      { awsManager },
+      { [key]: AWSJSONSecret<Data>(key, validate) },
+    )
+
+    const resultA = await confidant.runInitialize(key)
+
+    expect(resultA).toMatchObject({ key: `SUCCESS-${key}` })
   })
 
   it("should error if result not a success", async () => {
@@ -53,21 +81,23 @@ describe("AWSSecret", () => {
     })
 
     const key = "test-key"
-    const confidant = Confidant({ awsManager }, { [key]: AWSSecret(key) })
+    const confidant = Confidant({ awsManager }, { [key]: AWSJSONSecret(key) })
 
     await expect(() => confidant.runInitialize(key)).rejects.toBe(`failed`)
   })
 
-  it("should error if result not a string", async () => {
+  it("should error if bad data", async () => {
     mockGetSecretValue.mockImplementationOnce((_, callback) => {
-      callback(null, {})
+      callback(null, {
+        SecretString: "STRING, NOT JSON",
+      })
     })
 
     const key = "test-key"
-    const confidant = Confidant({ awsManager }, { [key]: AWSSecret(key) })
+    const confidant = Confidant({ awsManager }, { [key]: AWSJSONSecret(key) })
 
-    await expect(() => confidant.runInitialize(key)).rejects.toBe(
-      `Invalid key: ${key}`,
+    await expect(() => confidant.runInitialize(key)).rejects.toBeInstanceOf(
+      SyntaxError,
     )
   })
 
@@ -81,7 +111,9 @@ describe("AWSSecret", () => {
         const result: string = results.shift()!
 
         callback(null, {
-          SecretString: `SUCCESS-${SecretId}-${result}`,
+          SecretString: JSON.stringify({
+            key: `SUCCESS-${SecretId}-${result}`,
+          }),
         })
       },
     )
@@ -90,14 +122,14 @@ describe("AWSSecret", () => {
 
     const confidant = Confidant(
       { awsManager: awsManager1m },
-      { [key]: AWSSecret(key) },
+      { [key]: AWSJSONSecret(key) },
     )
 
     const onUpdate = jest.fn()
 
     const resultA = await confidant.runInitialize(key)
     expect(onUpdate).not.toHaveBeenCalled()
-    expect(resultA).toBe(`SUCCESS-${key}-1`)
+    expect(resultA).toMatchObject({ key: `SUCCESS-${key}-1` })
 
     const promiseA = new Promise(resolve => {
       confidant.onUpdate(key, value => {
@@ -111,7 +143,7 @@ describe("AWSSecret", () => {
     const resultB = await promiseA
 
     expect(onUpdate).toHaveBeenCalledTimes(1)
-    expect(resultB).toBe(`SUCCESS-${key}-2`)
+    expect(resultB).toMatchObject({ key: `SUCCESS-${key}-2` })
 
     const promiseB = new Promise(resolve => {
       confidant.onUpdate(key, value => {
@@ -125,6 +157,6 @@ describe("AWSSecret", () => {
     const resultC = await promiseB
 
     expect(onUpdate).toHaveBeenCalledTimes(3) // 2 Updates. The first update runs twice, second once.
-    expect(resultC).toBe(`SUCCESS-${key}-3`)
+    expect(resultC).toMatchObject({ key: `SUCCESS-${key}-3` })
   })
 })

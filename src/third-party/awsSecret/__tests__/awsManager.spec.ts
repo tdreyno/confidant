@@ -1,6 +1,5 @@
 import AWS from "aws-sdk"
-// import { timeout } from "../../util/timeout"
-import { AWSManager } from "../awsSecret"
+import { AWSManager } from "../awsManager"
 
 const mockGetSecretValue = jest.fn(
   ({ SecretId }: { SecretId: string }, callback) => {
