@@ -8,7 +8,7 @@ interface LaunchDarklyContext {
 }
 
 class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
-  private client_: LD.LDClient | undefined
+  private client_: LD.LDClient
 
   constructor(
     confidant: Confidant<LaunchDarklyContext, Record<string, any>>,
@@ -17,26 +17,24 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
     private defaultValue: T,
   ) {
     super(confidant)
+
+    this.client_ = LD.initialize(
+      this.launchDarklyKey,
+      this.confidant.context.launchDarklyUser,
+      {
+        streaming: true,
+      },
+    )
   }
 
-  async getClient(key: string): Promise<LD.LDClient> {
-    if (!this.client_) {
-      this.client_ = LD.initialize(
-        key,
-        this.confidant.context.launchDarklyUser,
-        {
-          streaming: true,
-        },
-      )
-    }
-
+  async getClient(): Promise<LD.LDClient> {
     await this.client_.waitForInitialization()
 
     return this.client_
   }
 
   async initialize(): Promise<T> {
-    const client = await this.getClient(this.launchDarklyKey)
+    const client = await this.getClient()
 
     client.on("change", () => {
       this.set(client.variation(this.key, this.defaultValue))

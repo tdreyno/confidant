@@ -1,9 +1,14 @@
 import { timeout } from "../util/timeout"
+import winston from "winston"
 
 class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   tasks: { [K in keyof Ms]: Task<C, TaskMakerResult<Ms[K]>> }
 
-  constructor(public context: C, taskMakers: Ms) {
+  constructor(
+    public context: C,
+    taskMakers: Ms,
+    public logger: winston.Logger,
+  ) {
     this.tasks = Object.entries(taskMakers).reduce((acc: any, [key, maker]) => {
       acc[key] = maker(this)
       return acc
@@ -13,15 +18,42 @@ class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   onInitialize<K extends keyof Ms>(
     key: K,
     fn: (value: TaskMakerResult<Ms[K]>) => void,
-  ) {
-    this.tasks[key].onInitialize(fn as any)
+  ): () => void {
+    return this.tasks[key].onInitialize(fn)
   }
 
   onUpdate<K extends keyof Ms>(
     key: K,
     fn: (value: TaskMakerResult<Ms[K]>) => void,
-  ) {
-    this.tasks[key].onUpdate(fn as any)
+  ): () => void {
+    return this.tasks[key].onUpdate(fn)
+  }
+
+  async replaceKey<K extends keyof Ms>(
+    key: K,
+    taskMaker: Ms[K],
+  ): Promise<void> {
+    const oldTask = this.tasks[key]
+
+    const task = taskMaker(this)
+
+    task.updateListeners = new Set([...oldTask.updateListeners])
+
+    const value = await task.runInitialize()
+
+    oldTask.destroy()
+
+    this.tasks[key] = task
+
+    task.updateListeners.forEach(listener => listener(value))
+  }
+
+  keyForTask(task: Task<any, any>): string | undefined {
+    for (const [key, value] of Object.entries(this.tasks)) {
+      if (value === task) {
+        return key
+      }
+    }
   }
 
   get<K extends keyof Ms>(key: K): Promise<TaskMakerResult<Ms[K]>> {
@@ -65,7 +97,10 @@ export const Confidant = <
 >(
   context: C,
   taskMakers: Ms,
-) => new Confidant_(context, taskMakers)
+  logger: winston.Logger = winston.createLogger({
+    silent: true,
+  }),
+) => new Confidant_(context, taskMakers, logger)
 
 export type Confidant<
   C extends any,
@@ -75,13 +110,17 @@ export type Confidant<
 export abstract class Task<C, V> {
   private hasInitialized = false
   protected currentValue: V | undefined
-  private initListeners: Set<(value: V) => void> = new Set()
-  private updateListeners: Set<(value: V) => void> = new Set()
+  public initListeners: Set<(value: V) => void> = new Set()
+  public updateListeners: Set<(value: V) => void> = new Set()
 
   constructor(
     protected confidant: Confidant_<C, Record<string, any>>,
     protected timeout = Infinity,
   ) {}
+
+  get logger() {
+    return this.confidant.logger
+  }
 
   abstract initialize(): Promise<V>
 
@@ -141,6 +180,17 @@ export abstract class Task<C, V> {
     this.initListeners.forEach(listener => listener(value))
 
     return value
+  }
+
+  destroy() {
+    this.initListeners = new Set()
+    this.updateListeners = new Set()
+
+    this.onDestroy()
+  }
+
+  protected onDestroy() {
+    return
   }
 }
 

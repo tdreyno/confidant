@@ -1,6 +1,8 @@
 import { Confidant, Task, TaskMaker } from "./task"
 
 export class Inputs_<C, V> extends Task<C, V> {
+  private unsubs: Array<() => void> = []
+
   constructor(
     confidant: Confidant<C, Record<string, any>>,
     private keys: string[],
@@ -10,11 +12,32 @@ export class Inputs_<C, V> extends Task<C, V> {
   }
 
   async initialize(): Promise<V> {
-    const results = await Promise.all(
-      this.keys.map(key => this.confidant.get(key)),
+    const results = await this.getResults()
+
+    this.unsubs = this.keys.map(key =>
+      this.confidant.onUpdate(key, () => {
+        void this.updateDownstream()
+      }),
     )
 
     return this.fn(...results)(this.confidant).runInitialize()
+  }
+
+  onDestroy() {
+    this.unsubs.forEach(unsub => unsub())
+  }
+
+  private getResults(): Promise<unknown[]> {
+    return Promise.all(this.keys.map(key => this.confidant.get(key)))
+  }
+
+  public async updateDownstream() {
+    const key = this.confidant.keyForTask(this)
+
+    if (key) {
+      const results = await this.getResults()
+      void this.confidant.replaceKey(key, this.fn(...results))
+    }
   }
 }
 

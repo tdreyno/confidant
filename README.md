@@ -40,7 +40,47 @@ const results = await Confidant(
   },
 )
 
-console.log(confidant.url)
+console.log(results.url)
 
-console.log(confidant.featureA)
+console.log(results.featureA)
+```
+
+### Add Logger
+
+Provide a [winston logger](https://github.com/winstonjs/winston) as the 3rd parameter to `Confidant`. Can be accessed as `this.logger` in custom Tasks.
+
+Can be used to forward logs to 3rd party logging platforms.
+
+```typescript
+import winston from "winston"
+import { Confidant, Task } from "@tdreyno/confidant"
+
+class MyToken extends JWT<ViceTokenData> {
+  constructor(
+    confidant: Confidant<ViceTokenData, Record<string, any>>,
+    private url: string,
+    private username: string,
+    private password: string,
+  ) {
+    super(confidant)
+  }
+
+  fetchJWT(): Promise<string> {
+    this.logger.log("My message")
+
+    return requestJWT(this.url, this.username, this.password, this.manager)
+  }
+}
+
+const results = await Confidant(
+  {},
+  {
+    myToken: c => new MyToken(c, "url", "username", "password"),
+  },
+  new winston.createLogger({
+    transports: [new winston.transports.Console()],
+  }),
+).initialize()
+
+console.log(results.myToken)
 ```

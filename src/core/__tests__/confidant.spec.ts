@@ -1,4 +1,6 @@
-import { Confidant } from "../task"
+import winston from "winston"
+import Transport from "winston-transport"
+import { Confidant, Task } from "../task"
 import { Echo, DELAY, TIMEOUT } from "./echo"
 
 describe("Confidant", () => {
@@ -147,5 +149,80 @@ describe("Confidant", () => {
 
     expect(result).toBe(10)
     expect(onUpdate).toBeCalledWith(10)
+  })
+
+  it("should utilize custom logger", async () => {
+    const onLog = jest.fn()
+
+    class CustomTransport extends Transport {
+      log(info: any, next: () => void) {
+        onLog(info.message)
+
+        next()
+      }
+    }
+
+    class CustomTask<T> extends Task<any, T> {
+      constructor(manager: any, private value: T) {
+        super(manager)
+      }
+
+      initialize(): Promise<T> {
+        this.logger.info(this.value)
+        return Promise.resolve(this.value)
+      }
+    }
+
+    const confidant = Confidant(
+      null as any,
+      {
+        task: c => new CustomTask(c, 5),
+      },
+      winston.createLogger({
+        transports: [new CustomTransport()],
+      }),
+    )
+
+    await confidant.runInitialize("task")
+
+    expect(onLog).toHaveBeenCalledWith(5)
+  })
+
+  it("should be able to replace a task by key", async () => {
+    const onUpdate = jest.fn()
+
+    const confidant = Confidant(null as any, {
+      task: Echo(1),
+    })
+
+    confidant.onUpdate("task", onUpdate)
+
+    const promise = confidant.replaceKey("task", Echo(5))
+
+    jest.advanceTimersByTime(DELAY)
+
+    await promise
+
+    expect(onUpdate).toHaveBeenCalledWith(5)
+  })
+
+  it("should lookup tasks", () => {
+    const confidant = Confidant(null as any, {
+      task: Echo(1),
+    })
+
+    const key = confidant.keyForTask(confidant.tasks.task)
+
+    expect(key).toBe("task")
+  })
+
+  it("should fail to lookup tasks", () => {
+    const confidant = Confidant(null as any, {})
+
+    const task = Echo(1)(confidant)
+
+    const key = confidant.keyForTask(task)
+
+    expect(key).toBeUndefined()
   })
 })
