@@ -68,7 +68,7 @@ class MyToken extends JWT<ViceTokenData> {
   fetchJWT(): Promise<string> {
     this.logger.log("My message")
 
-    return requestJWT(this.url, this.username, this.password, this.manager)
+    return this.requestJWT(this.url, this.username, this.password)
   }
 }
 

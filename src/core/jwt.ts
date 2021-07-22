@@ -1,5 +1,6 @@
+import AsyncRetry from "async-retry"
 import { decode } from "jsonwebtoken"
-import Singleton from "./jwtManager"
+import Singleton, { requestJWT } from "./jwtManager"
 import { Confidant, Task } from "./task"
 
 type JWTContext = any
@@ -35,5 +36,17 @@ export abstract class JWT<V extends { exp: number }> extends Task<
 
   validateJWTData(data: Record<string, unknown>): V {
     return data as unknown as V
+  }
+
+  protected requestJWT(
+    url: string,
+    username: string,
+    password: string,
+    options: {
+      notifyOnExpiry?: () => void
+      retry?: AsyncRetry.Options
+    } = {},
+  ) {
+    return requestJWT(url, username, password, this.manager, options)
   }
 }

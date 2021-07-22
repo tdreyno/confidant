@@ -58,7 +58,7 @@ describe("JWT", () => {
 
     class TestJWT extends JWT<any> {
       fetchJWT(): Promise<string> {
-        return requestJWT(URL, "username", "password", this.manager)
+        return this.requestJWT(URL, "username", "password")
       }
     }
 
@@ -86,7 +86,7 @@ describe("JWT", () => {
 
     class TestJWT extends JWT<any> {
       fetchJWT(): Promise<string> {
-        return requestJWT(URL, "username", "password", this.manager)
+        return this.requestJWT(URL, "username", "password")
       }
     }
 
@@ -132,7 +132,7 @@ describe("JWT", () => {
     type TestJWTData = { exp: number; num: number }
     class TestJWT extends JWT<TestJWTData> {
       fetchJWT(): Promise<string> {
-        return requestJWT(URL, "username", "password", this.manager)
+        return this.requestJWT(URL, "username", "password")
       }
 
       validateJWTData(decoded: Record<string, unknown>): TestJWTData {
@@ -176,7 +176,7 @@ describe("JWT", () => {
           })
         }
 
-        return requestJWT(URL, "username", "password", this.manager, {
+        return this.requestJWT(URL, "username", "password", {
           notifyOnExpiry,
         })
       }
@@ -254,7 +254,7 @@ describe("JWT", () => {
       }
 
       fetchJWT(): Promise<string> {
-        return requestJWT(URL, "username", "password", this.manager, {
+        return this.requestJWT(URL, "username", "password", {
           retry: {
             randomize: false,
             minTimeout: 100,
@@ -292,7 +292,7 @@ describe("JWT", () => {
 
     class TestJWT extends JWT<any> {
       fetchJWT(): Promise<string> {
-        return requestJWT(URL, "username", "password", this.manager, {
+        return this.requestJWT(URL, "username", "password", {
           retry: {
             randomize: false,
             retries: 3,
