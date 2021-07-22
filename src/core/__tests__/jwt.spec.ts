@@ -138,7 +138,7 @@ describe("JWT", () => {
       validateJWTData(decoded: Record<string, unknown>): TestJWTData {
         return {
           ...decoded,
-          num: parseInt((decoded.num as string) ?? "0", 10),
+          num: parseInt((decoded.num as string) || "0", 10),
         } as TestJWTData
       }
     }
