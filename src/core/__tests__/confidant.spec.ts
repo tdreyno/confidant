@@ -5,7 +5,7 @@ describe("Confidant", () => {
   it("should only initialize once", async () => {
     const onInit = jest.fn()
 
-    const confidant = new Confidant(null as any, {
+    const confidant = Confidant(null as any, {
       task: Echo(1),
     })
 
@@ -25,7 +25,7 @@ describe("Confidant", () => {
   it("should run callbacks onInitialize", async () => {
     const onInit = jest.fn()
 
-    const confidant = new Confidant(null as any, {
+    const confidant = Confidant(null as any, {
       task: Echo(1),
     })
 
@@ -41,7 +41,7 @@ describe("Confidant", () => {
   })
 
   it("should initialize all tasks at once", async () => {
-    const confidant = new Confidant(null as any, {
+    const confidant = Confidant(null as any, {
       task1: Echo(1, 25),
       task2: Echo(2, 5),
       task3: Echo(3, 15),
@@ -61,7 +61,7 @@ describe("Confidant", () => {
   })
 
   it("should get the value eventually on first run", async () => {
-    const confidant = new Confidant(null as any, {
+    const confidant = Confidant(null as any, {
       task: Echo(1),
     })
 
@@ -77,7 +77,7 @@ describe("Confidant", () => {
   })
 
   it("should get the value immediately when available", async () => {
-    const confidant = new Confidant(null as any, {
+    const confidant = Confidant(null as any, {
       task: Echo(1),
     })
 
@@ -97,7 +97,7 @@ describe("Confidant", () => {
   })
 
   it("should timeout the get request", async () => {
-    const confidant = new Confidant(null as any, {
+    const confidant = Confidant(null as any, {
       task: Echo(TIMEOUT + 1),
     })
 
@@ -119,7 +119,7 @@ describe("Confidant", () => {
   })
 
   it("should error when getting an invalid key", async () => {
-    const confidant = new Confidant(null as any, {})
+    const confidant = Confidant(null as any, {})
 
     await expect(() => (confidant.get as any)("fake")).rejects.toBeInstanceOf(
       Error,
@@ -129,7 +129,7 @@ describe("Confidant", () => {
   it("should run callbacks onUpdate", async () => {
     const onUpdate = jest.fn()
 
-    const confidant = new Confidant(null as any, {
+    const confidant = Confidant(null as any, {
       task1: Echo(5),
     })
 

@@ -9,7 +9,7 @@ type ThreeLevelCache = {
     [username: string]: {
       [password: string]: {
         jwt: string
-        timeoutId?: NodeJS.Timeout
+        timeoutId?: NodeJS.Timeout | number
       }
     }
   }
@@ -80,12 +80,12 @@ export class JWTManager {
       this.cache[url][username] = {}
     }
 
-    if (this.cache[url][username][password]) {
-      if (this.cache[url][username][password].timeoutId) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        clearTimeout(this.cache[url][username][password].timeoutId!)
-        this.cache[url][username][password].timeoutId = undefined
-      }
+    if (
+      this.cache[url][username][password] &&
+      this.cache[url][username][password].timeoutId
+    ) {
+      clearTimeout(this.cache[url][username][password].timeoutId as any)
+      this.cache[url][username][password].timeoutId = undefined
     }
 
     this.cache[url][username][password] = { jwt }
@@ -108,8 +108,7 @@ export class JWTManager {
     }
 
     if (this.cache[url][username][password].timeoutId) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      clearTimeout(this.cache[url][username][password].timeoutId!)
+      clearTimeout(this.cache[url][username][password].timeoutId as any)
       this.cache[url][username][password].timeoutId = undefined
     }
 
@@ -125,8 +124,7 @@ export class JWTManager {
 
     const now = Date.now()
     const timeTilExpireSeconds = jwtData.exp * 1000 - now
-    const bufferTime = this.refetchBufferTimeMs ?? 0
-    return timeTilExpireSeconds - bufferTime
+    return timeTilExpireSeconds - this.refetchBufferTimeMs
   }
 
   public isExpired(jwt: string): boolean {
@@ -142,18 +140,16 @@ export const requestJWT = async (
   url: string,
   username: string,
   password: string,
-  manager: JWTManager | false = SINGLETON,
+  manager: JWTManager = SINGLETON,
   options: {
     notifyOnExpiry?: () => void
     retry?: AsyncRetry.Options
   } = {},
 ): Promise<string> => {
-  if (manager) {
-    const hit = manager.get(url, username, password)
+  const hit = manager.get(url, username, password)
 
-    if (hit) {
-      return hit
-    }
+  if (hit) {
+    return hit
   }
 
   const executeFetch = async () => {
@@ -179,15 +175,11 @@ export const requestJWT = async (
       return Promise.reject(new Error("Empty JWT"))
     }
 
-    if (manager) {
-      manager.set(url, username, password, jwt, options.notifyOnExpiry)
-    }
+    manager.set(url, username, password, jwt, options.notifyOnExpiry)
 
     return jwt
   } catch (e) {
-    if (manager) {
-      manager.remove(url, username, password)
-    }
+    manager.remove(url, username, password)
 
     return Promise.reject(e)
   }

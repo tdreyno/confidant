@@ -11,7 +11,7 @@ describe("Inputs", () => {
 
     const waitValue = 5
 
-    const confidant = new Confidant(null as any, {
+    const confidant = Confidant(null as any, {
       waiting: Echo(waitValue, 10),
       chained: Inputs("waiting").chain(v => Echo(v * 2, 10)),
     })

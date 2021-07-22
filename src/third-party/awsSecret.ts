@@ -5,7 +5,7 @@ import { Confidant, Task, TaskMaker } from "../core/task"
 type KeyCache = {
   [key: string]: {
     value: string
-    timeoutId?: NodeJS.Timeout
+    timeoutId?: NodeJS.Timeout | number
   }
 }
 
@@ -34,12 +34,9 @@ export class AWSManager {
   }
 
   set(key: string, value: string, notifyOnExpiry?: () => void): void {
-    if (this.cache[key]) {
-      if (this.cache[key].timeoutId) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        clearTimeout(this.cache[key].timeoutId!)
-        this.cache[key].timeoutId = undefined
-      }
+    if (this.cache[key] && this.cache[key].timeoutId) {
+      clearTimeout(this.cache[key].timeoutId as any)
+      this.cache[key].timeoutId = undefined
     }
 
     this.cache[key] = { value }
@@ -60,8 +57,7 @@ export class AWSManager {
     }
 
     if (this.cache[key].timeoutId) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      clearTimeout(this.cache[key].timeoutId!)
+      clearTimeout(this.cache[key].timeoutId as any)
       this.cache[key].timeoutId = undefined
     }
 
@@ -69,12 +65,6 @@ export class AWSManager {
   }
 
   fetch(key: string, notifyOnExpiry?: () => void): Promise<string> {
-    const hit = this.get(key)
-
-    if (hit) {
-      return Promise.resolve(hit)
-    }
-
     return new Promise<string>((resolve, reject) =>
       this.secretsManager.getSecretValue({ SecretId: key }, (err, data) => {
         if (err) {

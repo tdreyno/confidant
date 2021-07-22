@@ -10,3 +10,37 @@ Confidant is a library for storing environmental variables, secrets, feature fla
 ```bash
 yarn add @tdreyno/confidant
 ```
+
+## Usage
+
+```typescript
+import { SecretsManager } from "aws-sdk"
+import {
+  Confidant,
+  AWSSecret,
+  Hardcoded as _,
+  LaunchDarkly,
+  Inputs,
+  AWSManager,
+} from "@tdreyno/confidant"
+
+const results = await Confidant(
+  {
+    awsManager: new AWSManager(new SecretsManager({ region: "ap-south-1" })),
+  },
+  {
+    ...DEV,
+    url: _("/prod"),
+    anotherThing: AWSSecret("MyViasat-TSUsage/PSM/serviceAccount/PROD"),
+
+    launchDarklyKey: AWSSecret("LDKEY FROM AWS"),
+    featureA: Inputs("launchDarklyKey").chain(
+      LaunchDarkly("feature-a", "default-value"),
+    ),
+  },
+)
+
+console.log(confidant.url)
+
+console.log(confidant.featureA)
+```

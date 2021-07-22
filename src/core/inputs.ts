@@ -9,10 +9,12 @@ export class Inputs_<C, V> extends Task<C, V> {
     super(confidant)
   }
 
-  initialize(): Promise<V> {
-    return Promise.all(this.keys.map(key => this.confidant.get(key))).then(
-      results => this.fn(...results)(this.confidant).initialize(),
+  async initialize(): Promise<V> {
+    const results = await Promise.all(
+      this.keys.map(key => this.confidant.get(key)),
     )
+
+    return this.fn(...results)(this.confidant).runInitialize()
   }
 }
 

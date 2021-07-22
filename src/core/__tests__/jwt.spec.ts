@@ -58,7 +58,7 @@ describe("JWT", () => {
 
     class TestJWT extends JWT<any> {
       fetchJWT(): Promise<string> {
-        return requestJWT(URL, "username", "password")
+        return requestJWT(URL, "username", "password", this.manager)
       }
     }
 
@@ -132,7 +132,7 @@ describe("JWT", () => {
     type TestJWTData = { exp: number; num: number }
     class TestJWT extends JWT<TestJWTData> {
       fetchJWT(): Promise<string> {
-        return requestJWT(URL, "username", "password")
+        return requestJWT(URL, "username", "password", this.manager)
       }
 
       validateJWTData(decoded: Record<string, unknown>): TestJWTData {

@@ -1,9 +1,6 @@
 import { timeout } from "../util/timeout"
 
-export class Confidant<
-  C extends any,
-  Ms extends Record<string, TaskMaker<C, any>>,
-> {
+class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   tasks: { [K in keyof Ms]: Task<C, TaskMakerResult<Ms[K]>> }
 
   constructor(public context: C, taskMakers: Ms) {
@@ -56,6 +53,25 @@ export class Confidant<
   }
 }
 
+export const Confidant = <
+  Ms extends {
+    [key: string]: TaskMaker<any, any>
+  },
+  C = Ms extends {
+    [key: string]: TaskMaker<infer PossibleC, any>
+  }
+    ? PossibleC
+    : never,
+>(
+  context: C,
+  taskMakers: Ms,
+) => new Confidant_(context, taskMakers)
+
+export type Confidant<
+  C extends any,
+  Ms extends Record<string, TaskMaker<C, any>>,
+> = Confidant_<C, Ms>
+
 export abstract class Task<C, V> {
   private hasInitialized = false
   protected currentValue: V | undefined
@@ -63,7 +79,7 @@ export abstract class Task<C, V> {
   private updateListeners: Set<(value: V) => void> = new Set()
 
   constructor(
-    protected confidant: Confidant<C, Record<string, any>>,
+    protected confidant: Confidant_<C, Record<string, any>>,
     protected timeout = Infinity,
   ) {}
 
@@ -129,11 +145,14 @@ export abstract class Task<C, V> {
 }
 
 export type TaskMaker<C, V> = (
-  manager: Confidant<C, Record<string, any>>,
+  manager: Confidant_<C, Record<string, any>>,
 ) => Task<C, V>
 
 export type TaskMakerResult<T extends TaskMaker<any, any>> =
   T extends TaskMaker<any, infer V> ? V : never
+
+export type TaskMakerContext<T extends TaskMaker<any, any>> =
+  T extends TaskMaker<infer C, any> ? C : never
 
 export type TaskResult<T extends Task<any, any>> = T extends Task<any, infer V>
   ? V

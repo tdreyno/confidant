@@ -11,15 +11,15 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
   private client_: LD.LDClient | undefined
 
   constructor(
-    manager: Confidant<LaunchDarklyContext, Record<string, any>>,
+    confidant: Confidant<LaunchDarklyContext, Record<string, any>>,
     private launchDarklyKey: string,
     private key: string,
     private defaultValue: T,
   ) {
-    super(manager)
+    super(confidant)
   }
 
-  getClient(key: string): Promise<LD.LDClient> {
+  async getClient(key: string): Promise<LD.LDClient> {
     if (!this.client_) {
       this.client_ = LD.initialize(
         key,
@@ -30,18 +30,19 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
       )
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.client_.waitForInitialization().then(() => this.client_!)
+    await this.client_.waitForInitialization()
+
+    return this.client_
   }
 
-  initialize(): Promise<T> {
-    return this.getClient(this.launchDarklyKey).then(client => {
-      client.on("change", () => {
-        this.set(client.variation(this.key, this.defaultValue))
-      })
+  async initialize(): Promise<T> {
+    const client = await this.getClient(this.launchDarklyKey)
 
-      return client.variation(this.key, this.defaultValue)
+    client.on("change", () => {
+      this.set(client.variation(this.key, this.defaultValue))
     })
+
+    return client.variation(this.key, this.defaultValue)
   }
 }
 

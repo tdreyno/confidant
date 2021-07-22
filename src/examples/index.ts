@@ -1,5 +1,6 @@
 import { SecretsManager } from "aws-sdk"
 import {
+  Confidant,
   AWSSecret,
   Hardcoded as _,
   LaunchDarkly,
@@ -29,14 +30,15 @@ const PROD = {
   viceToken: Inputs("viceUrl", "viceCreds").chain(ViceToken),
 }
 
-console.log(PROD)
-const secretsManager = new SecretsManager({ region: "ap-south-1" })
-new AWSManager(secretsManager)
-
-// const result = await getEnvironment(PROD, {
-//   secretsManager: new SecretsManager({ region: "ap-south-1" }),
-// })
-
-// result.psmServiceAccount
-// result.anotherThing
-// result.url
+void Confidant(
+  {
+    awsManager: new AWSManager(new SecretsManager({ region: "ap-south-1" })),
+  },
+  PROD,
+)
+  .initialize()
+  .then(confidant => {
+    confidant.featureA
+    confidant.anotherThing
+    confidant.url
+  })

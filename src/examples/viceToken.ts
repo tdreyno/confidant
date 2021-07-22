@@ -2,7 +2,7 @@ import { Confidant, TaskMaker } from "../core/task"
 import { requestJWT } from "../core/jwtManager"
 import { JWT } from "../core/jwt"
 
-type ViceTokenData = { exp: number }
+type ViceTokenData = any
 export class ViceToken_ extends JWT<ViceTokenData> {
   constructor(
     confidant: Confidant<ViceTokenData, Record<string, any>>,
