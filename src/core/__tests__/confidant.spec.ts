@@ -178,9 +178,11 @@ describe("Confidant", () => {
       {
         task: c => new CustomTask(c, 5),
       },
-      winston.createLogger({
-        transports: [new CustomTransport()],
-      }),
+      {
+        logger: winston.createLogger({
+          transports: [new CustomTransport()],
+        }),
+      },
     )
 
     await confidant.runInitialize("task")

@@ -1,22 +1,15 @@
-import fetch from "node-fetch"
 import { decode } from "jsonwebtoken"
-import retry from "async-retry"
-import AsyncRetry from "async-retry"
 import ms from "ms"
 
-type ThreeLevelCache = {
-  [url: string]: {
-    [username: string]: {
-      [password: string]: {
-        jwt: string
-        timeoutId?: NodeJS.Timeout | number
-      }
-    }
+type KeyCache = {
+  [key: string]: {
+    jwt: string
+    timeoutId?: NodeJS.Timeout | number
   }
 }
 
 export class JWTManager {
-  public cache: ThreeLevelCache = {}
+  public cache: KeyCache = {}
   private refetchBufferTimeMs: number
 
   /**
@@ -43,25 +36,15 @@ export class JWTManager {
     this.cache = {}
   }
 
-  get(url: string, username: string, password: string): string | undefined {
-    if (
-      !this.cache[url] ||
-      !this.cache[url][username] ||
-      !this.cache[url][username][password]
-    ) {
+  get(key: string): string | undefined {
+    if (!this.cache[key]) {
       return
     }
 
-    return this.cache[url][username][password].jwt
+    return this.cache[key].jwt
   }
 
-  set(
-    url: string,
-    username: string,
-    password: string,
-    jwt: string,
-    notifyOnExpiry?: () => void,
-  ): void {
+  set(key: string, jwt: string, notifyOnExpiry?: () => void): void {
     if (this.isExpired(jwt)) {
       // console.warn("Do not add expired JWTs")
 
@@ -72,23 +55,12 @@ export class JWTManager {
       return
     }
 
-    if (!this.cache[url]) {
-      this.cache[url] = {}
+    if (this.cache[key] && this.cache[key].timeoutId) {
+      clearTimeout(this.cache[key].timeoutId as any)
+      this.cache[key].timeoutId = undefined
     }
 
-    if (!this.cache[url][username]) {
-      this.cache[url][username] = {}
-    }
-
-    if (
-      this.cache[url][username][password] &&
-      this.cache[url][username][password].timeoutId
-    ) {
-      clearTimeout(this.cache[url][username][password].timeoutId as any)
-      this.cache[url][username][password].timeoutId = undefined
-    }
-
-    this.cache[url][username][password] = { jwt }
+    this.cache[key] = { jwt }
 
     if (notifyOnExpiry) {
       const delay = this.nextRefreshTime(jwt)
@@ -98,21 +70,21 @@ export class JWTManager {
       }, delay)
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.cache[url][username][password]!.timeoutId = timeoutId
+      this.cache[key]!.timeoutId = timeoutId
     }
   }
 
-  remove(url: string, username: string, password: string): void {
-    if (!this.cache[url] || !this.cache[url][username]) {
+  remove(key: string): void {
+    if (!this.cache[key]) {
       return
     }
 
-    if (this.cache[url][username][password].timeoutId) {
-      clearTimeout(this.cache[url][username][password].timeoutId as any)
-      this.cache[url][username][password].timeoutId = undefined
+    if (this.cache[key].timeoutId) {
+      clearTimeout(this.cache[key].timeoutId as any)
+      this.cache[key].timeoutId = undefined
     }
 
-    delete this.cache[url][username][password]
+    delete this.cache[key]
   }
 
   private nextRefreshTime(data: string): number {
@@ -135,54 +107,5 @@ export class JWTManager {
 }
 
 const SINGLETON = new JWTManager()
-
-export const requestJWT = async (
-  url: string,
-  username: string,
-  password: string,
-  manager: JWTManager = SINGLETON,
-  options: {
-    notifyOnExpiry?: () => void
-    retry?: AsyncRetry.Options
-  } = {},
-): Promise<string> => {
-  const hit = manager.get(url, username, password)
-
-  if (hit) {
-    return hit
-  }
-
-  const executeFetch = async () => {
-    const res = await fetch(url, {
-      method: "post",
-      body: JSON.stringify({
-        auth: { username, password },
-      }),
-      headers: { "Content-Type": "application/json" },
-    })
-
-    if (200 !== res.status) {
-      throw new Error(`Error: ${res.status}`)
-    }
-
-    return res.text()
-  }
-
-  try {
-    const jwt = await retry(executeFetch, options.retry)
-
-    if (jwt === "") {
-      return Promise.reject(new Error("Empty JWT"))
-    }
-
-    manager.set(url, username, password, jwt, options.notifyOnExpiry)
-
-    return jwt
-  } catch (e) {
-    manager.remove(url, username, password)
-
-    return Promise.reject(e)
-  }
-}
 
 export default SINGLETON

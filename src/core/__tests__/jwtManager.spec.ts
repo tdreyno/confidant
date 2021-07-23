@@ -8,39 +8,39 @@ describe("jwtManager", () => {
   it("should clear", () => {
     const manager = new JWTManager()
 
-    manager.set("URL", "username", "password", JWT)
+    manager.set("test-key", JWT)
 
-    const resultA = manager.get("URL", "username", "password")
+    const resultA = manager.get("test-key")
     expect(resultA).toBe(JWT)
 
     manager.clear()
 
-    const resultB = manager.get("URL", "username", "password")
+    const resultB = manager.get("test-key")
     expect(resultB).toBeUndefined()
   })
 
   it("should get from cache hit", () => {
     const manager = new JWTManager()
 
-    manager.set("URL", "username", "password", JWT)
+    manager.set("test-key", JWT)
 
-    const resultA = manager.get("URL", "username", "password")
+    const resultA = manager.get("test-key")
     expect(resultA).toBe(JWT)
   })
 
   it("should get undefined from cache miss", () => {
     const manager = new JWTManager()
 
-    const resultB = manager.get("URL2", "username2", "password2")
+    const resultB = manager.get("test-key2")
     expect(resultB).toBeUndefined()
   })
 
   it("should set JWT", () => {
     const manager = new JWTManager()
 
-    manager.set("URL", "username", "password", JWT)
+    manager.set("test-key", JWT)
 
-    const resultA = manager.get("URL", "username", "password")
+    const resultA = manager.get("test-key")
     expect(resultA).toBe(JWT)
   })
 
@@ -57,7 +57,7 @@ describe("jwtManager", () => {
 
     const onExpiry = jest.fn()
 
-    manager.set("URL1", "username1", "password1", expiredJWT, onExpiry)
+    manager.set("test-key", expiredJWT, onExpiry)
 
     expect(onExpiry).toHaveBeenCalled()
 
@@ -71,7 +71,7 @@ describe("jwtManager", () => {
 
     const onExpiry = jest.fn()
 
-    manager.set("URL2", "username2", "password2", expiredJWT, onExpiry)
+    manager.set("test-key", expiredJWT, onExpiry)
 
     expect(onExpiry).not.toHaveBeenCalled()
 
@@ -98,8 +98,8 @@ describe("jwtManager", () => {
 
     const onExpiry = jest.fn()
 
-    manager.set("URL", "username", "password", expiredJWT1, onExpiry)
-    manager.set("URL", "username", "password", expiredJWT2, onExpiry)
+    manager.set("test-key", expiredJWT1, onExpiry)
+    manager.set("test-key", expiredJWT2, onExpiry)
 
     expect(onExpiry).not.toHaveBeenCalled()
 
@@ -115,14 +115,14 @@ describe("jwtManager", () => {
   it("should remove JWT", () => {
     const manager = new JWTManager()
 
-    manager.set("URL", "username", "password", JWT)
+    manager.set("test-key", JWT)
 
-    const resultA = manager.get("URL", "username", "password")
+    const resultA = manager.get("test-key")
     expect(resultA).toBe(JWT)
 
-    manager.remove("URL", "username", "password")
+    manager.remove("test-key")
 
-    const resultB = manager.get("URL", "username", "password")
+    const resultB = manager.get("test-key")
     expect(resultB).toBeUndefined()
   })
 })

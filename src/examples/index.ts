@@ -7,7 +7,6 @@ import {
   Inputs,
   AWSManager,
 } from "../index"
-import { ViceToken } from "./viceToken"
 
 const DEV = {
   url: _("/dev"),
@@ -24,10 +23,6 @@ const PROD = {
   ...DEV,
   url: _("/prod"),
   anotherThing: AWSSecret("MyViasat-TSUsage/PSM/serviceAccount/PROD"),
-
-  viceUrl: _("vice"),
-  viceCreds: _({ username: "test", password: "pass" }),
-  viceToken: Inputs("viceUrl", "viceCreds").chain(ViceToken),
 }
 
 void Confidant(

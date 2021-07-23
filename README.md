@@ -55,9 +55,9 @@ Can be used to forward logs to 3rd party logging platforms.
 import winston from "winston"
 import { Confidant, Task } from "@tdreyno/confidant"
 
-class MyToken extends JWT<ViceTokenData> {
+class MyToken extends JWT<MyTokenData> {
   constructor(
-    confidant: Confidant<ViceTokenData, Record<string, any>>,
+    confidant: Confidant<MyTokenData, Record<string, any>>,
     private url: string,
     private username: string,
     private password: string,
@@ -68,7 +68,7 @@ class MyToken extends JWT<ViceTokenData> {
   fetchJWT(): Promise<string> {
     this.logger.log("My message")
 
-    return this.requestJWT(this.url, this.username, this.password)
+    return fetch(this.url)
   }
 }
 
@@ -77,9 +77,11 @@ const results = await Confidant(
   {
     myToken: c => new MyToken(c, "url", "username", "password"),
   },
-  new winston.createLogger({
-    transports: [new winston.transports.Console()],
-  }),
+  {
+    logger: new winston.createLogger({
+      transports: [new winston.transports.Console()],
+    }),
+  },
 ).initialize()
 
 console.log(results.myToken)

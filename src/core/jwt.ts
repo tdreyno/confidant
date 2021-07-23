@@ -1,6 +1,7 @@
+import retry from "async-retry"
 import AsyncRetry from "async-retry"
 import { decode } from "jsonwebtoken"
-import Singleton, { requestJWT } from "./jwtManager"
+import Singleton from "./jwtManager"
 import { Confidant, Task } from "./task"
 
 type JWTContext = any
@@ -11,7 +12,9 @@ export abstract class JWT<V extends { exp: number }> extends Task<
 > {
   constructor(
     confidant: Confidant<JWTContext, Record<string, any>>,
+    protected cacheKey: string,
     protected manager = Singleton,
+    protected retry: AsyncRetry.Options = {},
   ) {
     super(confidant)
   }
@@ -21,7 +24,19 @@ export abstract class JWT<V extends { exp: number }> extends Task<
   }
 
   protected async fetchJWTAndDecode(): Promise<V> {
-    const jwt = await this.fetchJWT()
+    let jwt = this.manager.get(this.cacheKey)
+
+    if (!jwt) {
+      try {
+        jwt = await retry(() => this.fetchJWT(), this.retry)
+
+        this.manager.set(this.cacheKey, jwt, this.notifyOnExpiry.bind(this))
+      } catch (e) {
+        this.manager.remove(this.cacheKey)
+
+        throw e
+      }
+    }
 
     const data = this.decodeJWT(jwt)
 
@@ -30,23 +45,15 @@ export abstract class JWT<V extends { exp: number }> extends Task<
 
   abstract fetchJWT(): Promise<string>
 
+  notifyOnExpiry() {
+    return
+  }
+
   protected decodeJWT(jwt: string): Record<string, unknown> {
     return decode(jwt) as Record<string, unknown>
   }
 
   validateJWTData(data: Record<string, unknown>): V {
     return data as unknown as V
-  }
-
-  protected requestJWT(
-    url: string,
-    username: string,
-    password: string,
-    options: {
-      notifyOnExpiry?: () => void
-      retry?: AsyncRetry.Options
-    } = {},
-  ) {
-    return requestJWT(url, username, password, this.manager, options)
   }
 }

@@ -11,7 +11,7 @@ class Echo_<T> extends Task<EchoContext, T> {
     private value: T,
     private delay: number,
   ) {
-    super(manager, TIMEOUT)
+    super(manager, `${TIMEOUT}ms`)
   }
 
   async initialize(): Promise<T> {

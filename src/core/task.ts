@@ -1,14 +1,23 @@
 import { timeout } from "../util/timeout"
 import winston from "winston"
+import ms from "ms"
 
 class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   tasks: { [K in keyof Ms]: Task<C, TaskMakerResult<Ms[K]>> }
+  public globalTimeout: number
+  public logger: winston.Logger
 
   constructor(
     public context: C,
     taskMakers: Ms,
-    public logger: winston.Logger,
+    options: {
+      logger: winston.Logger
+      timeout: string
+    },
   ) {
+    this.globalTimeout = ms(options.timeout)
+    this.logger = options.logger
+
     this.tasks = Object.entries(taskMakers).reduce((acc: any, [key, maker]) => {
       acc[key] = maker(this)
       return acc
@@ -97,10 +106,19 @@ export const Confidant = <
 >(
   context: C,
   taskMakers: Ms,
-  logger: winston.Logger = winston.createLogger({
-    silent: true,
-  }),
-) => new Confidant_(context, taskMakers, logger)
+  options?: {
+    logger?: winston.Logger
+    timeout?: string
+  },
+) =>
+  new Confidant_(context, taskMakers, {
+    logger:
+      (options && options.logger) ||
+      winston.createLogger({
+        silent: true,
+      }),
+    timeout: (options && options.timeout) || "30s",
+  })
 
 export type Confidant<
   C extends any,
@@ -110,13 +128,20 @@ export type Confidant<
 export abstract class Task<C, V> {
   private hasInitialized = false
   protected currentValue: V | undefined
+  protected timeout: number
   public initListeners: Set<(value: V) => void> = new Set()
   public updateListeners: Set<(value: V) => void> = new Set()
 
   constructor(
     protected confidant: Confidant_<C, Record<string, any>>,
-    protected timeout = Infinity,
-  ) {}
+    timeout?: string,
+  ) {
+    this.timeout = timeout
+      ? ms(timeout)
+      : this.confidant
+      ? this.confidant.globalTimeout
+      : ms("30s")
+  }
 
   get logger() {
     return this.confidant.logger
