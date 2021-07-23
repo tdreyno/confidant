@@ -6,12 +6,9 @@ const mockVariation = jest.fn((key: string) => {
   return `${key}-RESULT`
 })
 
-const mockOn = jest.fn()
-
-jest.mock("launchdarkly-node-client-sdk", () => {
+jest.mock("launchdarkly-node-server-sdk", () => {
   return {
-    initialize: jest.fn(() => ({
-      on: mockOn,
+    init: jest.fn(() => ({
       waitForInitialization: jest.fn().mockResolvedValue(void 0),
       variation: mockVariation,
     })),
@@ -69,38 +66,5 @@ describe("LaunchDarkly", () => {
 
     const result2 = await confidant.get(key2)
     expect(result2).toBe(`${key2}-RESULT`)
-  })
-
-  it("should update when the feature changes", async () => {
-    const key = "test-key"
-
-    mockOn.mockImplementationOnce((_, callback) => {
-      setTimeout(() => {
-        callback(`${key}-RESULT2`)
-      }, 2000)
-    })
-
-    const confidant = Confidant(
-      {
-        launchDarklyUser: {
-          key: "USERID",
-        },
-      },
-      {
-        launchDarklyKey: Hardcoded("LDKEY FROM AWS"),
-        [key]: Inputs("launchDarklyKey").chain(
-          LaunchDarkly(key, "default-value"),
-        ),
-      },
-    )
-
-    const result = await confidant.initialize()
-
-    expect(result[key]).toBe(`${key}-RESULT`)
-
-    jest.advanceTimersByTime(2000)
-
-    // const resultB = await confidant.get(key)
-    // expect(resultB).toBe(`${key}-RESULT2`)
   })
 })

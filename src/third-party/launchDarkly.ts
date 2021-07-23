@@ -1,4 +1,4 @@
-import LD from "launchdarkly-node-client-sdk"
+import LD from "launchdarkly-node-server-sdk"
 import { Confidant, Task, TaskMaker } from "../core/task"
 
 interface LaunchDarklyContext {
@@ -7,9 +7,21 @@ interface LaunchDarklyContext {
   }
 }
 
-class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
-  private client_: LD.LDClient
+let client: LD.LDClient
+const getClient = async (
+  launchDarklyKey: string,
+  logger: LD.LDLogger,
+): Promise<LD.LDClient> => {
+  if (!client) {
+    client = LD.init(launchDarklyKey, { logger })
+  }
 
+  await client.waitForInitialization()
+
+  return client
+}
+
+class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
   constructor(
     confidant: Confidant<LaunchDarklyContext, Record<string, any>>,
     private launchDarklyKey: string,
@@ -17,30 +29,16 @@ class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
     private defaultValue: T,
   ) {
     super(confidant)
-
-    this.client_ = LD.initialize(
-      this.launchDarklyKey,
-      this.confidant.context.launchDarklyUser,
-      {
-        streaming: true,
-      },
-    )
-  }
-
-  async getClient(): Promise<LD.LDClient> {
-    await this.client_.waitForInitialization()
-
-    return this.client_
   }
 
   async initialize(): Promise<T> {
-    const client = await this.getClient()
+    const client = await getClient(this.launchDarklyKey, this.confidant.logger)
 
-    client.on("change", () => {
-      this.set(client.variation(this.key, this.defaultValue))
-    })
-
-    return client.variation(this.key, this.defaultValue)
+    return client.variation(
+      this.key,
+      this.confidant.context.launchDarklyUser,
+      this.defaultValue,
+    )
   }
 }
 
