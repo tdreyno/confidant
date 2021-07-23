@@ -26,7 +26,7 @@ describe("JWT", () => {
     )
 
     type TestJWTData = any
-    class TestJWT extends JWT<any> {
+    class TestJWT extends JWT {
       constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
         super(confidant, "test-cache-key")
       }
@@ -41,11 +41,10 @@ describe("JWT", () => {
 
     const task = new TestJWT(null as any)
     const result = await task.runInitialize()
-    // const result = 5
-    expect(result).toMatchObject({ hello: "world" })
+    expect(result).toBe(jwt)
   })
 
-  it.only("should pull token from cache if already fetched", async () => {
+  it("should pull token from cache if already fetched", async () => {
     jest.useRealTimers()
 
     const URL = "http://test/get-jwt"
@@ -64,7 +63,7 @@ describe("JWT", () => {
     )
 
     type TestJWTData = any
-    class TestJWT extends JWT<any> {
+    class TestJWT extends JWT {
       constructor(
         confidant: Confidant<TestJWTData, Record<string, any>>,
         cacheKey: string,
@@ -109,43 +108,6 @@ describe("JWT", () => {
     jest.useFakeTimers()
   })
 
-  it("should allow custom decoding of jwt string", async () => {
-    const URL = "http://test/get-jwt"
-
-    const jwt = sign({ num: "1" }, "secret", { expiresIn: "100ms" })
-
-    server.use(
-      rest.post(URL, async (_req, res, ctx) => {
-        return res(ctx.status(200), ctx.text(jwt))
-      }),
-    )
-
-    type TestJWTData = { exp: number; num: number }
-    class TestJWT extends JWT<TestJWTData> {
-      constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
-        super(confidant, "test-cache-key")
-      }
-
-      async fetchJWT(): Promise<string> {
-        const res = await fetch(URL, {
-          method: "POST",
-        })
-        return await res.text()
-      }
-
-      validateJWTData(decoded: Record<string, unknown>): TestJWTData {
-        return {
-          ...decoded,
-          num: parseInt((decoded.num as string) || "0", 10),
-        } as TestJWTData
-      }
-    }
-
-    const task = new TestJWT(null as any)
-    const result = await task.runInitialize()
-    expect(result).toMatchObject({ num: 1 })
-  })
-
   it("should update when jwt expires", async () => {
     const URL = "http://test/get-jwt"
 
@@ -153,20 +115,19 @@ describe("JWT", () => {
 
     const getJWT = (num: string) => sign({ num }, "secret", { expiresIn })
 
-    const values = ["1", "2"]
+    const values = ["1", "2"].map(getJWT)
+    const jwts = [...values]
 
     server.use(
       rest.post(URL, async (_req, res, ctx) => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const value = values.shift()!
-        const jwt = getJWT(value)
+        const jwt = values.shift()!
         return res(ctx.status(200), ctx.text(jwt))
       }),
     )
 
-    type TestJWTData = any
-    class TestJWT extends JWT<any> {
-      constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
+    class TestJWT extends JWT {
+      constructor(confidant: Confidant<any, Record<string, any>>) {
         super(confidant, "test-key")
       }
 
@@ -180,7 +141,7 @@ describe("JWT", () => {
       notifyOnExpiry() {
         this.manager.remove("test-key")
 
-        void this.fetchJWTAndDecode().then(jwtData => {
+        void this.retryFetchJWT().then(jwtData => {
           this.set(jwtData)
         })
       }
@@ -189,7 +150,7 @@ describe("JWT", () => {
     const task = new TestJWT(null as any)
     const resultA = await task.runInitialize()
 
-    expect(resultA).toMatchObject({ num: "1" })
+    expect(resultA).toBe(jwts[0])
 
     const onUpdate = jest.fn()
 
@@ -205,11 +166,11 @@ describe("JWT", () => {
     const resultB2 = await promise
 
     expect(onUpdate).toHaveBeenCalledTimes(1)
-    expect(resultB2).toMatchObject({ num: "2" })
+    expect(resultB2).toBe(jwts[1])
 
     const resultB = await task.get()
 
-    expect(resultB).toMatchObject({ num: "2" })
+    expect(resultB).toBe(jwts[1])
   })
 
   it("should retry failed requests", async () => {
@@ -217,6 +178,7 @@ describe("JWT", () => {
     const URL = "http://test/get-jwt"
 
     const getJWT = (num: number) => sign({ num }, "secret")
+    const jwt = getJWT(5)
 
     const values = [500, 400, 200]
 
@@ -244,16 +206,12 @@ describe("JWT", () => {
             break
         }
 
-        return res(
-          ctx.status(status),
-          ctx.text(status === 200 ? getJWT(5) : "Error"),
-        )
+        return res(ctx.status(status), ctx.text(status === 200 ? jwt : "Error"))
       }),
     )
 
-    type TestJWTData = { exp: number; num: string }
-    class TestJWT extends JWT<TestJWTData> {
-      constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
+    class TestJWT extends JWT {
+      constructor(confidant: Confidant<any, Record<string, any>>) {
         super(confidant, "test-cache-key", undefined, {
           randomize: false,
           minTimeout: 100,
@@ -278,7 +236,7 @@ describe("JWT", () => {
     const promiseA = task.runInitialize()
 
     const resultA = await promiseA
-    expect(resultA).toMatchObject({ num: 5 })
+    expect(resultA).toBe(jwt)
 
     expect(on500).toHaveBeenCalledTimes(1)
     expect(on400).toHaveBeenCalledTimes(1)
@@ -301,7 +259,7 @@ describe("JWT", () => {
     )
 
     type TestJWTData = any
-    class TestJWT extends JWT<any> {
+    class TestJWT extends JWT {
       constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
         super(confidant, "test-cache-key", undefined, {
           randomize: false,

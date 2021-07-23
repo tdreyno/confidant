@@ -65,12 +65,14 @@ export class JWTManager {
     if (notifyOnExpiry) {
       const delay = this.nextRefreshTime(jwt)
 
-      const timeoutId = setTimeout(() => {
-        notifyOnExpiry()
-      }, delay)
+      if (isFinite(delay)) {
+        const timeoutId = setTimeout(() => {
+          notifyOnExpiry()
+        }, delay)
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.cache[key]!.timeoutId = timeoutId
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.cache[key]!.timeoutId = timeoutId
+      }
     }
   }
 
