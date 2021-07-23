@@ -173,6 +173,48 @@ describe("JWT", () => {
     expect(resultB).toBe(jwts[1])
   })
 
+  it("should update when manually invalidated", async () => {
+    const URL = "http://test/get-jwt"
+
+    const expiresIn = 600
+
+    const getJWT = (num: string) => sign({ num }, "secret", { expiresIn })
+
+    const values = ["1", "2"].map(getJWT)
+    const jwts = [...values]
+
+    server.use(
+      rest.post(URL, async (_req, res, ctx) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const jwt = values.shift()!
+        return res(ctx.status(200), ctx.text(jwt))
+      }),
+    )
+
+    class TestJWT extends JWT {
+      constructor(confidant: Confidant<any, Record<string, any>>) {
+        super(confidant, "test-key")
+      }
+
+      async fetchJWT(): Promise<string> {
+        const res = await fetch(URL, {
+          method: "POST",
+        })
+
+        return res.text()
+      }
+    }
+
+    const task = new TestJWT(null as any)
+    const resultA = await task.runInitialize()
+
+    expect(resultA).toBe(jwts[0])
+
+    const resultB = await task.invalidate()
+
+    expect(resultB).toBe(jwts[1])
+  })
+
   it("should retry failed requests", async () => {
     jest.useRealTimers()
     const URL = "http://test/get-jwt"

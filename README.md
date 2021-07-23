@@ -96,3 +96,20 @@ const results = await Confidant(
 
 console.log(results.myToken)
 ```
+
+### Invalidate JWT
+
+```typescript
+import { Confidant } from "@tdreyno/confidant"
+
+const confidant = Confidant(
+  {},
+  {
+    myJWT: MyJWT("url", "username", "password"),
+  },
+)
+
+const results = await confidant.initialize()
+
+const newValue = await confidant.invalidate("myJWT")
+```

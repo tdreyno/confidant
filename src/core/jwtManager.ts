@@ -44,13 +44,15 @@ export class JWTManager {
     return this.cache[key].jwt
   }
 
-  set(key: string, jwt: string, notifyOnExpiry?: () => void): void {
+  set(
+    key: string,
+    jwt: string,
+    notifyOnExpiry: () => void = () => void 0,
+  ): void {
     if (this.isExpired(jwt)) {
       // console.warn("Do not add expired JWTs")
 
-      if (notifyOnExpiry) {
-        notifyOnExpiry()
-      }
+      notifyOnExpiry()
 
       return
     }
@@ -62,17 +64,15 @@ export class JWTManager {
 
     this.cache[key] = { jwt }
 
-    if (notifyOnExpiry) {
-      const delay = this.nextRefreshTime(jwt)
+    const delay = this.nextRefreshTime(jwt)
 
-      if (isFinite(delay)) {
-        const timeoutId = setTimeout(() => {
-          notifyOnExpiry()
-        }, delay)
+    if (isFinite(delay)) {
+      const timeoutId = setTimeout(() => {
+        notifyOnExpiry()
+      }, delay)
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.cache[key]!.timeoutId = timeoutId
-      }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.cache[key]!.timeoutId = timeoutId
     }
   }
 

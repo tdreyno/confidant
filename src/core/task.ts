@@ -92,6 +92,10 @@ class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   runInitialize<K extends keyof Ms>(key: K): Promise<TaskMakerResult<Ms[K]>> {
     return this.tasks[key].runInitialize()
   }
+
+  invalidate<K extends keyof Ms>(key: K): Promise<TaskMakerResult<Ms[K]>> {
+    return this.tasks[key].invalidate()
+  }
 }
 
 export const Confidant = <
@@ -207,7 +211,7 @@ export abstract class Task<C, V> {
     return value
   }
 
-  destroy() {
+  public destroy() {
     this.initListeners = new Set()
     this.updateListeners = new Set()
 
@@ -216,6 +220,11 @@ export abstract class Task<C, V> {
 
   protected onDestroy() {
     return
+  }
+
+  async invalidate(): Promise<V> {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.currentValue!
   }
 }
 

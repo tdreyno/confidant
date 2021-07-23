@@ -29,7 +29,7 @@ export abstract class JWT extends Task<JWTContext, string> {
     try {
       const jwt = await retry(() => this.fetchJWT(), this.retry)
 
-      this.manager.set(this.cacheKey, jwt, this.notifyOnExpiry.bind(this))
+      this.manager.set(this.cacheKey, jwt, () => this.notifyOnExpiry())
 
       return jwt
     } catch (e) {
@@ -41,7 +41,12 @@ export abstract class JWT extends Task<JWTContext, string> {
 
   abstract fetchJWT(): Promise<string>
 
-  notifyOnExpiry() {
+  invalidate(): Promise<string> {
+    this.manager.remove(this.cacheKey)
+    return this.retryFetchJWT()
+  }
+
+  notifyOnExpiry(): void {
     return
   }
 }

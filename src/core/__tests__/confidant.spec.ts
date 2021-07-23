@@ -227,4 +227,26 @@ describe("Confidant", () => {
 
     expect(key).toBeUndefined()
   })
+
+  it("should be able to invalidate a task", async () => {
+    const onUpdate = jest.fn()
+
+    const confidant = Confidant(null as any, {
+      task1: Echo(5),
+    })
+
+    confidant.onUpdate("task1", onUpdate)
+
+    const resultPromise = confidant.runInitialize("task1")
+
+    jest.advanceTimersByTime(DELAY)
+
+    await resultPromise
+
+    const invalidatePromise = confidant.invalidate("task1")
+
+    const result = await invalidatePromise
+
+    expect(result).toBe(5)
+  })
 })
