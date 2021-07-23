@@ -11,7 +11,7 @@ Confidant is a library for storing environmental variables, secrets, feature fla
 yarn add @tdreyno/confidant
 ```
 
-## Usage
+## Basic Usage
 
 ```typescript
 import { SecretsManager } from "aws-sdk"
@@ -38,12 +38,22 @@ const results = await Confidant(
       LaunchDarkly("feature-a", "default-value"),
     ),
   },
-)
+).initialize()
 
 console.log(results.url)
 
 console.log(results.featureA)
 ```
+
+### Built-in Tasks
+
+- `Hardcoded` (often aliased as `_`): A task which always returns a hard-coded value.
+- `AWSSecret`: A task which loads a **string** secret from AWS Secret Manager. Must include an instance of `awsManager` in the `Confidant` context.
+- `AWSJSONSecret`: A task which loads a **JSON** secret from AWS Secret Manager. Must include an instance of `awsManager` in the `Confidant` context.
+- `LaunchDarkly`: A task which loads a feature flag when provided a `launchDarklyUser` object in the `Confidant` context.
+- `JWT` is an abstract base class. Create custom JWT tasks by inheriting from it and implementing the `fetchJWT` method which returns a `Promise<string>`
+- `DecodedJWT` is a task which takes a JWT string and a function for converting the decoded object into a typed and validated data structure.
+- `Inputs` is a task which listens to other tasks by key name. When all those tasks are loaded (or updated), pass the values to a dependent task via `.chain`. Allows composition of tasks.
 
 ### Add Logger
 
