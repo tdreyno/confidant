@@ -129,8 +129,14 @@ export type Confidant<
   Ms extends Record<string, TaskMaker<C, any>>,
 > = Confidant_<C, Ms>
 
+export enum TaskState {
+  PENDING,
+  INITIALIZED,
+  DESTROYED,
+}
+
 export abstract class Task<C, V> {
-  private hasInitialized = false
+  public state: TaskState = TaskState.PENDING
   protected currentValue: V | undefined
   protected timeout: number
   public initListeners: Set<(value: V) => void> = new Set()
@@ -154,7 +160,11 @@ export abstract class Task<C, V> {
   abstract initialize(): Promise<V>
 
   public get(): Promise<V> {
-    if (this.hasInitialized) {
+    if (this.state === TaskState.DESTROYED) {
+      return Promise.reject("Task has been destroyed")
+    }
+
+    if (this.state === TaskState.INITIALIZED) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return Promise.resolve(this.currentValue!)
     }
@@ -175,7 +185,11 @@ export abstract class Task<C, V> {
   }
 
   set(value: V): void {
-    if (!this.hasInitialized) {
+    if (this.state === TaskState.DESTROYED) {
+      throw new Error("Task has been destroyed")
+    }
+
+    if (this.state === TaskState.PENDING) {
       throw new Error("Cannot set Task value before initialization")
     }
 
@@ -194,7 +208,11 @@ export abstract class Task<C, V> {
   }
 
   public async runInitialize(): Promise<V> {
-    if (this.hasInitialized) {
+    if (this.state === TaskState.DESTROYED) {
+      throw new Error("Task has been destroyed")
+    }
+
+    if (this.state === TaskState.INITIALIZED) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.currentValue!
     }
@@ -204,7 +222,7 @@ export abstract class Task<C, V> {
       this.initialize(),
     ])
 
-    this.hasInitialized = true
+    this.state = TaskState.INITIALIZED
     this.currentValue = value
     this.initListeners.forEach(listener => listener(value))
 
@@ -216,6 +234,8 @@ export abstract class Task<C, V> {
     this.updateListeners = new Set()
 
     this.onDestroy()
+
+    this.state = TaskState.DESTROYED
   }
 
   protected onDestroy() {

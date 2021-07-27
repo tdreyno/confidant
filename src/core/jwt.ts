@@ -1,7 +1,7 @@
 import retry from "async-retry"
 import AsyncRetry from "async-retry"
 import Singleton from "./jwtManager"
-import { Confidant, Task } from "./task"
+import { Confidant, Task, TaskState } from "./task"
 
 type JWTContext = any
 
@@ -18,10 +18,18 @@ export abstract class JWT extends Task<JWTContext, string> {
   }
 
   initialize(): Promise<string> {
+    if (this.state !== TaskState.PENDING) {
+      throw new Error("Task has already initialized")
+    }
+
     return this.retryFetchJWT()
   }
 
   protected async retryFetchJWT(): Promise<string> {
+    if (this.state === TaskState.DESTROYED) {
+      throw new Error("Task has been destroyed")
+    }
+
     const hit = this.manager.get(this.cacheKey)
 
     if (hit) {
@@ -34,6 +42,10 @@ export abstract class JWT extends Task<JWTContext, string> {
       const jwt = await retry(() => this.fetchJWT(), this.retry)
 
       this.manager.set(this.cacheKey, jwt, () => {
+        if (this.state === TaskState.DESTROYED) {
+          return true // unsubscribe
+        }
+
         this.logger.debug(`JWT expired: ${this.cacheKey}`)
         void this.invalidate()
       })
@@ -49,6 +61,10 @@ export abstract class JWT extends Task<JWTContext, string> {
   abstract fetchJWT(): Promise<string>
 
   async invalidate(): Promise<string> {
+    if (this.state === TaskState.DESTROYED) {
+      throw new Error("Task has been destroyed")
+    }
+
     this.manager.remove(this.cacheKey)
 
     const newValue = await this.retryFetchJWT()

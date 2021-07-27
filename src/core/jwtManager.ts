@@ -60,14 +60,24 @@ export class JWTManager {
   set(
     key: string,
     jwt: string,
-    notifyOnExpiry: () => void = () => void 0,
+    notifyOnExpiry: () => true | undefined = () => void 0,
   ): void {
+    const doNotify = () => {
+      const result = notifyOnExpiry()
+
+      // If a true was returned, stop the expiry checks
+      if (result) {
+        clearTimeout(this.cache[key].timeoutId as any)
+        this.cache[key].timeoutId = undefined
+      }
+    }
+
     if (this.isExpired(jwt)) {
       this.logger.debug(
         "Tried to set a jwt that is already expired. Calling onExpiry immediately.",
       )
 
-      notifyOnExpiry()
+      doNotify()
 
       return
     }
@@ -89,7 +99,7 @@ export class JWTManager {
 
       const timeoutId = setTimeout(() => {
         this.logger.debug(`${shorten(jwt)}: expired`)
-        notifyOnExpiry()
+        doNotify()
       }, delay)
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
