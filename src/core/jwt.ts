@@ -13,6 +13,8 @@ export abstract class JWT extends Task<JWTContext, string> {
     protected retry: AsyncRetry.Options = {},
   ) {
     super(confidant)
+
+    this.manager.setLogger(this.confidant.logger)
   }
 
   initialize(): Promise<string> {
@@ -23,13 +25,18 @@ export abstract class JWT extends Task<JWTContext, string> {
     const hit = this.manager.get(this.cacheKey)
 
     if (hit) {
+      this.logger.debug(`JWT cache hit: ${this.cacheKey}`)
       return hit
     }
 
     try {
+      this.logger.debug(`Fetching JWT: ${this.cacheKey}`)
       const jwt = await retry(() => this.fetchJWT(), this.retry)
 
-      this.manager.set(this.cacheKey, jwt, () => this.notifyOnExpiry())
+      this.manager.set(this.cacheKey, jwt, () => {
+        this.logger.debug(`JWT expired: ${this.cacheKey}`)
+        void this.invalidate()
+      })
 
       return jwt
     } catch (e) {
@@ -41,12 +48,13 @@ export abstract class JWT extends Task<JWTContext, string> {
 
   abstract fetchJWT(): Promise<string>
 
-  invalidate(): Promise<string> {
+  async invalidate(): Promise<string> {
     this.manager.remove(this.cacheKey)
-    return this.retryFetchJWT()
-  }
 
-  notifyOnExpiry(): void {
-    return
+    const newValue = await this.retryFetchJWT()
+
+    this.set(newValue)
+
+    return newValue
   }
 }

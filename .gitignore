@@ -4,3 +4,4 @@ pkg
 report.*
 yarn-error.log
 coverage
+package-lock.json

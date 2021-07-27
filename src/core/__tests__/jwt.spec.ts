@@ -5,9 +5,18 @@ import Singleton from "../jwtManager"
 import { JWT } from "../jwt"
 import { Confidant } from "../task"
 import { timeout } from "../../util/timeout"
+import winston from "winston"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { server } = require("../../__tests__/server")
+
+export const TEST_CONFIDANT = {
+  logger: winston.createLogger({
+    level: "debug",
+    silent: true,
+    // transports: [new winston.transports.Console()],
+  }),
+} as unknown as Confidant<any, any>
 
 describe("JWT", () => {
   beforeEach(() => {
@@ -39,7 +48,7 @@ describe("JWT", () => {
       }
     }
 
-    const task = new TestJWT(null as any)
+    const task = new TestJWT(TEST_CONFIDANT)
     const result = await task.runInitialize()
     expect(result).toBe(jwt)
   })
@@ -83,9 +92,9 @@ describe("JWT", () => {
     const onInitB = jest.fn()
     const onResolve = jest.fn()
 
-    const taskA = new TestJWT(null as any, "key1")
+    const taskA = new TestJWT(TEST_CONFIDANT, "key1")
 
-    const taskB = new TestJWT(null as any, "key1")
+    const taskB = new TestJWT(TEST_CONFIDANT, "key1")
     taskB.onInitialize(onInitB)
 
     expect(onInitB).not.toHaveBeenCalled()
@@ -135,19 +144,12 @@ describe("JWT", () => {
         const res = await fetch(URL, {
           method: "POST",
         })
-        return await res.text()
-      }
 
-      notifyOnExpiry() {
-        this.manager.remove("test-key")
-
-        void this.retryFetchJWT().then(jwtData => {
-          this.set(jwtData)
-        })
+        return res.text()
       }
     }
 
-    const task = new TestJWT(null as any)
+    const task = new TestJWT(TEST_CONFIDANT)
     const resultA = await task.runInitialize()
 
     expect(resultA).toBe(jwts[0])
@@ -205,7 +207,7 @@ describe("JWT", () => {
       }
     }
 
-    const task = new TestJWT(null as any)
+    const task = new TestJWT(TEST_CONFIDANT)
     const resultA = await task.runInitialize()
 
     expect(resultA).toBe(jwts[0])
@@ -274,7 +276,7 @@ describe("JWT", () => {
       }
     }
 
-    const task = new TestJWT(null as any)
+    const task = new TestJWT(TEST_CONFIDANT)
     const promiseA = task.runInitialize()
 
     const resultA = await promiseA
@@ -324,7 +326,7 @@ describe("JWT", () => {
       }
     }
 
-    const task = new TestJWT(null as any)
+    const task = new TestJWT(TEST_CONFIDANT)
     const promiseA = task.runInitialize()
 
     await expect(() => promiseA).rejects.toBeInstanceOf(Error)

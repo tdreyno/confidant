@@ -1,5 +1,8 @@
 import { decode } from "jsonwebtoken"
 import ms from "ms"
+import winston from "winston"
+import { formatDistanceToNow } from "date-fns"
+import { shorten } from "../util/shorten"
 
 type KeyCache = {
   [key: string]: {
@@ -10,6 +13,7 @@ type KeyCache = {
 
 export class JWTManager {
   public cache: KeyCache = {}
+  private logger: winston.Logger
   private refetchBufferTimeMs: number
 
   /**
@@ -29,7 +33,16 @@ export class JWTManager {
    **/
   constructor(refetchBufferTimeMs = "5m") {
     this.refetchBufferTimeMs = ms(refetchBufferTimeMs)
+
+    this.logger = winston.createLogger({
+      silent: true,
+    })
+
     this.clear()
+  }
+
+  setLogger(logger: winston.Logger) {
+    this.logger = logger
   }
 
   clear(): void {
@@ -50,7 +63,9 @@ export class JWTManager {
     notifyOnExpiry: () => void = () => void 0,
   ): void {
     if (this.isExpired(jwt)) {
-      // console.warn("Do not add expired JWTs")
+      this.logger.debug(
+        "Tried to set a jwt that is already expired. Calling onExpiry immediately.",
+      )
 
       notifyOnExpiry()
 
@@ -65,9 +80,15 @@ export class JWTManager {
     this.cache[key] = { jwt }
 
     const delay = this.nextRefreshTime(jwt)
-
     if (isFinite(delay)) {
+      this.logger.debug(
+        `${shorten(jwt)}: nextRefreshTime is ${formatDistanceToNow(
+          Date.now() + delay,
+        )}`,
+      )
+
       const timeoutId = setTimeout(() => {
+        this.logger.debug(`${shorten(jwt)}: expired`)
         notifyOnExpiry()
       }, delay)
 
@@ -96,9 +117,10 @@ export class JWTManager {
       return Infinity
     }
 
+    const expiryMs = jwtData.exp * 1000
     const now = Date.now()
-    const timeTilExpireSeconds = jwtData.exp * 1000 - now
-    return timeTilExpireSeconds - this.refetchBufferTimeMs
+    const timeTilExpireMs = expiryMs - now
+    return timeTilExpireMs - this.refetchBufferTimeMs
   }
 
   public isExpired(jwt: string): boolean {

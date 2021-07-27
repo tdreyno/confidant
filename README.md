@@ -88,7 +88,7 @@ const results = await Confidant(
     myToken: c => new MyToken(c, "url", "username", "password"),
   },
   {
-    logger: new winston.createLogger({
+    logger: winston.createLogger({
       transports: [new winston.transports.Console()],
     }),
   },

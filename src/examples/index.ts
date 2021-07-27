@@ -8,6 +8,7 @@ import {
   AWSManager,
 } from "../index"
 
+// const ViceToken = 5 as any
 const DEV = {
   url: _("/dev"),
   psmServiceAccount: AWSSecret("MyViasat-TSUsage/PSM/serviceAccount"),
@@ -17,6 +18,13 @@ const DEV = {
   featureA: Inputs("launchDarklyKey").chain(
     LaunchDarkly("feature-a", "default-value"),
   ),
+
+  // psm: Group({
+  //   url: _("/dev"),
+  //   jwtURL: _("/jwt"),
+  //   creds: AWSSecret("psm-creds"),
+  //   token: Inputs("url", "creds").chain(ViceToken),
+  // }),
 }
 
 const PROD = {
