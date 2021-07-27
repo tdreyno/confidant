@@ -1,4 +1,4 @@
-import winston from "winston"
+import { createLogger } from "winston"
 import Transport from "winston-transport"
 import { Confidant, Task } from "../task"
 import { Echo, DELAY, TIMEOUT } from "./echo"
@@ -179,7 +179,7 @@ describe("Confidant", () => {
         task: c => new CustomTask(c, 5),
       },
       {
-        logger: winston.createLogger({
+        logger: createLogger({
           transports: [new CustomTransport()],
         }),
       },

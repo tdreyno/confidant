@@ -62,7 +62,7 @@ Provide a [winston logger](https://github.com/winstonjs/winston) as the 3rd para
 Can be used to forward logs to 3rd party logging platforms.
 
 ```typescript
-import winston from "winston"
+import { createLogger, transports } from "winston"
 import { Confidant, Task } from "@tdreyno/confidant"
 
 class MyToken extends JWT<MyTokenData> {
@@ -88,8 +88,8 @@ const results = await Confidant(
     myToken: c => new MyToken(c, "url", "username", "password"),
   },
   {
-    logger: winston.createLogger({
-      transports: [new winston.transports.Console()],
+    logger: createLogger({
+      transports: [new transports.Console()],
     }),
   },
 ).initialize()

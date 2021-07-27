@@ -1,6 +1,6 @@
 import { decode } from "jsonwebtoken"
 import ms from "ms"
-import winston from "winston"
+import { createLogger, Logger } from "winston"
 import { formatDistanceToNow } from "date-fns"
 import { shorten } from "../util/shorten"
 
@@ -13,7 +13,7 @@ type KeyCache = {
 
 export class JWTManager {
   public cache: KeyCache = {}
-  private logger: winston.Logger
+  private logger: Logger
   private refetchBufferTimeMs: number
 
   /**
@@ -34,14 +34,14 @@ export class JWTManager {
   constructor(refetchBufferTimeMs = "5m") {
     this.refetchBufferTimeMs = ms(refetchBufferTimeMs)
 
-    this.logger = winston.createLogger({
+    this.logger = createLogger({
       silent: true,
     })
 
     this.clear()
   }
 
-  setLogger(logger: winston.Logger) {
+  setLogger(logger: Logger) {
     this.logger = logger
   }
 

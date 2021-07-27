@@ -5,16 +5,16 @@ import Singleton from "../jwtManager"
 import { JWT } from "../jwt"
 import { Confidant } from "../task"
 import { timeout } from "../../util/timeout"
-import winston from "winston"
+import { createLogger } from "winston"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { server } = require("../../__tests__/server")
 
 export const TEST_CONFIDANT = {
-  logger: winston.createLogger({
+  logger: createLogger({
     level: "debug",
     silent: true,
-    // transports: [new winston.transports.Console()],
+    // transports: [new transports.Console()],
   }),
 } as unknown as Confidant<any, any>
 

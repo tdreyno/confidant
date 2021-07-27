@@ -1,17 +1,17 @@
 import { timeout } from "../util/timeout"
-import winston from "winston"
+import { createLogger, Logger } from "winston"
 import ms from "ms"
 
 class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   tasks: { [K in keyof Ms]: Task<C, TaskMakerResult<Ms[K]>> }
   public globalTimeout: number
-  public logger: winston.Logger
+  public logger: Logger
 
   constructor(
     public context: C,
     taskMakers: Ms,
     options: {
-      logger: winston.Logger
+      logger: Logger
       timeout: string
     },
   ) {
@@ -111,14 +111,14 @@ export const Confidant = <
   context: C,
   taskMakers: Ms,
   options?: {
-    logger?: winston.Logger
+    logger?: Logger
     timeout?: string
   },
 ) =>
   new Confidant_(context, taskMakers, {
     logger:
       (options && options.logger) ||
-      winston.createLogger({
+      createLogger({
         silent: true,
       }),
     timeout: (options && options.timeout) || "30s",
