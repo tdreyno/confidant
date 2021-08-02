@@ -1,8 +1,9 @@
 name: Release
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
 jobs:
   release:
     name: Release
@@ -16,8 +17,6 @@ jobs:
           node-version: 14
       - name: Install dependencies
         run: yarn install
-      - name: Test
-        run: yarn test
       - name: Build
         run: yarn build
       - name: Release
