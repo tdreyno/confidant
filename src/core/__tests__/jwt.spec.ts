@@ -1,4 +1,5 @@
 import { rest } from "msw"
+import { setupServer } from "msw/node"
 import { sign } from "jsonwebtoken"
 import fetch from "node-fetch"
 import Singleton from "../jwtManager"
@@ -6,9 +7,6 @@ import { JWT } from "../jwt"
 import { Confidant } from "../task"
 import { timeout } from "../../util/timeout"
 import { createLogger } from "winston"
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { server } = require("../../__tests__/server")
 
 export const TEST_CONFIDANT = {
   logger: createLogger({
@@ -18,10 +16,18 @@ export const TEST_CONFIDANT = {
   }),
 } as unknown as Confidant<any, any>
 
+const server = setupServer()
+
 describe("JWT", () => {
-  beforeEach(() => {
+  beforeAll(() => server.listen())
+
+  afterEach(() => {
+    server.resetHandlers()
+
     Singleton.clear()
   })
+
+  afterAll(() => server.close())
 
   it("should allow custom implementation of fetch", async () => {
     const URL = "http://test/get-jwt"
@@ -122,16 +128,16 @@ describe("JWT", () => {
 
     const expiresIn = 600
 
-    const getJWT = (num: string) => sign({ num }, "secret", { expiresIn })
+    const getJWT = (num: string, expiresIn: number) =>
+      sign({ num }, "secret", { expiresIn })
 
-    const values = ["1", "2", "3", "4", "5"].map(getJWT)
+    const values = [getJWT("first", expiresIn), getJWT("second", 10000)]
     const jwts = [...values]
 
     server.use(
       rest.post(URL, async (_req, res, ctx) => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const jwt = values.shift()!
-        TEST_CONFIDANT.logger.debug(jwt)
         return res(ctx.status(200), ctx.text(jwt))
       }),
     )
