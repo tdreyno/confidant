@@ -124,13 +124,14 @@ describe("JWT", () => {
 
     const getJWT = (num: string) => sign({ num }, "secret", { expiresIn })
 
-    const values = ["1", "2"].map(getJWT)
+    const values = ["1", "2", "3", "4", "5"].map(getJWT)
     const jwts = [...values]
 
     server.use(
       rest.post(URL, async (_req, res, ctx) => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const jwt = values.shift()!
+        TEST_CONFIDANT.logger.debug(jwt)
         return res(ctx.status(200), ctx.text(jwt))
       }),
     )
