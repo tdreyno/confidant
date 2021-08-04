@@ -46,7 +46,7 @@ export class JWTManager {
   }
 
   clear(): void {
-    this.cache = {}
+    Object.keys(this.cache).forEach(key => this.remove(key))
   }
 
   get(key: string): string | undefined {
@@ -89,7 +89,10 @@ export class JWTManager {
 
     this.cache[key] = { jwt }
 
+    this.logger.debug(`Set JWT: ${shorten(jwt)}`)
+
     const delay = this.nextRefreshTime(jwt)
+
     if (isFinite(delay)) {
       this.logger.debug(
         `${shorten(jwt)}: nextRefreshTime is ${formatDistanceToNow(
@@ -98,6 +101,10 @@ export class JWTManager {
       )
 
       const timeoutId = setTimeout(() => {
+        if (!this.cache[key]) {
+          return
+        }
+
         this.logger.debug(`${shorten(jwt)}: expired`)
         doNotify()
       }, delay)
@@ -139,7 +146,3 @@ export class JWTManager {
     return isFinite(delay) && delay <= 0
   }
 }
-
-const SINGLETON = new JWTManager()
-
-export default SINGLETON

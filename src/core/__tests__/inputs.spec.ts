@@ -1,12 +1,10 @@
 import { Confidant } from "../task"
 import { Inputs } from "../inputs"
 import { Echo } from "./echo"
-import { timeout } from "../../util/timeout"
+import { wait } from "../../util/timeout"
 
 describe("Inputs", () => {
   it("should initialize chained Task after inputs", async () => {
-    jest.useRealTimers()
-
     const onWait = jest.fn()
     const onEcho = jest.fn()
 
@@ -33,20 +31,17 @@ describe("Inputs", () => {
     await taskPromise
 
     expect(onEcho).toHaveBeenCalledWith(waitValue * 2)
-
-    jest.useFakeTimers()
   })
 
   it("should rebuild chained Task after inputs update", async () => {
-    jest.useRealTimers()
-
     const onEcho = jest.fn()
 
-    const waitValue = 5
+    const value = 5
+    const delay = 500
 
     const confidant = Confidant(null as any, {
-      waiting: Echo(waitValue, 10),
-      chained: Inputs("waiting").chain(v => Echo(v * 2, 10)),
+      waiting: Echo(value, delay),
+      chained: Inputs("waiting").chain(v => Echo(v * 2, delay)),
     })
 
     confidant.onUpdate("chained", onEcho)
@@ -55,21 +50,14 @@ describe("Inputs", () => {
 
     expect(onEcho).not.toHaveBeenCalled()
 
-    await confidant.replaceKey("waiting", Echo(waitValue * 2, 10))
+    await confidant.replaceKey("waiting", Echo(value * 2, delay))
 
-    try {
-      await timeout(11)
-    } catch (e) {
-    } finally {
-      expect(onEcho).toHaveBeenCalledWith(waitValue * 4)
-    }
+    await wait(delay * 2)
 
-    jest.useFakeTimers()
+    expect(onEcho).toHaveBeenCalledWith(value * 4)
   })
 
   it("should handle updates if missing from confidant", async () => {
-    jest.useRealTimers()
-
     const waitValue = 5
 
     const confidant = Confidant(null as any, {
@@ -84,7 +72,5 @@ describe("Inputs", () => {
 
     // Should not throw
     await task.updateDownstream()
-
-    jest.useFakeTimers()
   })
 })

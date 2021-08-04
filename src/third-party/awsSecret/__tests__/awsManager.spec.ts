@@ -1,4 +1,5 @@
 import AWS from "aws-sdk"
+import { wait } from "../../../util/timeout"
 import { AWSManager } from "../awsManager"
 
 const mockGetSecretValue = jest.fn(
@@ -68,8 +69,8 @@ describe("awsManager", () => {
     expect(resultA).toBe(VALUE)
   })
 
-  it("should set VALUE and clear old expiry", () => {
-    const manager = new AWSManager(secretsManager, "5s")
+  it("should set VALUE and clear old expiry", async () => {
+    const manager = new AWSManager(secretsManager, "3s")
 
     const onExpiry = jest.fn()
 
@@ -86,20 +87,16 @@ describe("awsManager", () => {
     const resultA = manager.get(KEY)
     expect(resultA).toBe(VALUE + VALUE)
 
-    jest.advanceTimersByTime(5000)
+    await wait(3000)
 
     expect(onExpiry).not.toHaveBeenCalled()
     expect(onExpiry2).toHaveBeenCalled()
   })
 
   // it("should immediately notifyOnExpiry when setting already expired VALUE", async () => {
-  //   jest.useRealTimers()
-
   //   const expiredVALUE = sign({ foo: "bar" }, "secret", { expiresIn: "200ms" })
 
-  //   try {
-  //     await timeout(200)
-  //   } catch (e) {}
+  //   await wait(200)
 
   //   const manager = new AWSManager("0s")
 
@@ -108,8 +105,6 @@ describe("awsManager", () => {
   //   manager.set("URL1", "username1", "password1", expiredVALUE, onExpiry)
 
   //   expect(onExpiry).toHaveBeenCalled()
-
-  //   jest.useFakeTimers()
   // })
 
   // it("should notifyOnExpiry when VALUE expires", () => {
@@ -122,8 +117,6 @@ describe("awsManager", () => {
   //   manager.set(KEY, expiredVALUE, onExpiry)
 
   //   expect(onExpiry).not.toHaveBeenCalled()
-
-  //   jest.advanceTimersByTime(10000)
 
   //   expect(onExpiry).toHaveBeenCalled()
   // })
@@ -138,11 +131,11 @@ describe("awsManager", () => {
   //   expect(manager.isExpired(expiredVALUE2)).toBeFalsy()
   // })
 
-  it("should notifyOnExpiry when VALUE expires even if it is set twice", () => {
+  it("should notifyOnExpiry when VALUE expires even if it is set twice", async () => {
     const expiredVALUE1 = VALUE
     const expiredVALUE2 = VALUE + VALUE
 
-    const manager = new AWSManager(secretsManager, "5s")
+    const manager = new AWSManager(secretsManager, "4s")
 
     const onExpiry = jest.fn()
 
@@ -151,11 +144,11 @@ describe("awsManager", () => {
 
     expect(onExpiry).not.toHaveBeenCalled()
 
-    jest.advanceTimersByTime(2000)
+    await wait(2000)
 
     expect(onExpiry).not.toHaveBeenCalled()
 
-    jest.advanceTimersByTime(3000)
+    await wait(2000)
 
     expect(onExpiry).toHaveBeenCalledTimes(1)
   })
@@ -175,7 +168,7 @@ describe("awsManager", () => {
   })
 
   it("should remove VALUE and clear timeout", () => {
-    const manager = new AWSManager(secretsManager, "5s")
+    const manager = new AWSManager(secretsManager, "2s")
 
     const onExpiry = jest.fn()
 
@@ -190,8 +183,6 @@ describe("awsManager", () => {
 
     const resultB = manager.get(KEY)
     expect(resultB).toBeUndefined()
-
-    jest.advanceTimersByTime(5000)
 
     expect(onExpiry).not.toHaveBeenCalled()
   })

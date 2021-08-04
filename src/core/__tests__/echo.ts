@@ -1,8 +1,8 @@
 import { Confidant, Task, TaskMaker } from "../task"
-import { timeout } from "../../util/timeout"
+import { wait } from "../../util/timeout"
 
-export const DELAY = 10
-export const TIMEOUT = 50
+export const DELAY = 100
+export const TIMEOUT = 1000
 
 type EchoContext = any
 class Echo_<T> extends Task<EchoContext, T> {
@@ -15,11 +15,9 @@ class Echo_<T> extends Task<EchoContext, T> {
   }
 
   async initialize(): Promise<T> {
-    try {
-      await timeout(this.delay)
-    } finally {
-      return this.value
-    }
+    await wait(this.delay)
+
+    return this.value
   }
 }
 

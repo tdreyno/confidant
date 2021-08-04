@@ -130,9 +130,10 @@ export type Confidant<
 > = Confidant_<C, Ms>
 
 export enum TaskState {
-  PENDING,
-  INITIALIZED,
-  DESTROYED,
+  PENDING = "PENDING",
+  INITIALIZED = "INITIALIZED",
+  UPDATING = "UPDATING",
+  DESTROYED = "DESTROYED",
 }
 
 export abstract class Task<C, V> {
@@ -160,6 +161,8 @@ export abstract class Task<C, V> {
   abstract initialize(): Promise<V>
 
   public get(): Promise<V> {
+    this.logger.debug(`Current task state: ${this.state}`)
+
     if (this.state === TaskState.DESTROYED) {
       return Promise.reject("Task has been destroyed")
     }
@@ -169,8 +172,20 @@ export abstract class Task<C, V> {
       return Promise.resolve(this.currentValue!)
     }
 
+    if (this.state === TaskState.UPDATING) {
+      return new Promise(resolve => {
+        const unSub = this.onUpdate(v => {
+          resolve(v)
+          unSub()
+        })
+      })
+    }
+
     return new Promise(resolve => {
-      this.onInitialize(v => resolve(v))
+      const unSub = this.onInitialize(v => {
+        resolve(v)
+        unSub()
+      })
     })
   }
 
@@ -200,6 +215,8 @@ export abstract class Task<C, V> {
     this.currentValue = value
 
     this.updateListeners.forEach(listener => listener(value))
+
+    this.state = TaskState.INITIALIZED
   }
 
   update(fn: (currentValue: V) => V): void {
@@ -218,7 +235,7 @@ export abstract class Task<C, V> {
     }
 
     const value = await Promise.race([
-      timeout<V>(this.timeout),
+      timeout(this.timeout) as Promise<V>,
       this.initialize(),
     ])
 

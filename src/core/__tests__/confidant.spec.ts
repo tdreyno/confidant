@@ -1,7 +1,7 @@
 import { createLogger } from "winston"
 import Transport from "winston-transport"
 import { Confidant, Task } from "../task"
-import { Echo, DELAY, TIMEOUT } from "./echo"
+import { Echo, TIMEOUT } from "./echo"
 
 describe("Confidant", () => {
   it("should only initialize once", async () => {
@@ -13,13 +13,9 @@ describe("Confidant", () => {
 
     confidant.onInitialize("task", onInit)
 
-    const resultPromiseA = confidant.runInitialize("task")
-    jest.advanceTimersByTime(DELAY)
-    await resultPromiseA
+    await confidant.runInitialize("task")
 
-    const resultPromiseB = confidant.runInitialize("task")
-    jest.advanceTimersByTime(DELAY)
-    await resultPromiseB
+    await confidant.runInitialize("task")
 
     expect(onInit).toHaveBeenCalledTimes(1)
   })
@@ -33,11 +29,7 @@ describe("Confidant", () => {
 
     confidant.onInitialize("task", onInit)
 
-    const resultPromise = confidant.runInitialize("task")
-
-    jest.advanceTimersByTime(DELAY)
-
-    await resultPromise
+    await confidant.runInitialize("task")
 
     expect(onInit).toBeCalledWith(1)
   })
@@ -50,8 +42,6 @@ describe("Confidant", () => {
     })
 
     const resultPromise = confidant.initialize()
-
-    jest.advanceTimersByTime(25)
 
     const results = await resultPromise
 
@@ -71,8 +61,6 @@ describe("Confidant", () => {
 
     void confidant.runInitialize("task")
 
-    jest.advanceTimersByTime(DELAY)
-
     const result = await resultPromise
 
     expect(result).toBe(1)
@@ -83,25 +71,23 @@ describe("Confidant", () => {
       task: Echo(1),
     })
 
-    const initPromise = confidant.runInitialize("task")
+    await confidant.runInitialize("task")
 
-    jest.advanceTimersByTime(DELAY)
-
-    await initPromise
-
-    const resultPromise = confidant.get("task")
-
-    jest.advanceTimersByTime(1)
-
-    const result = await resultPromise
+    const result = await confidant.get("task")
 
     expect(result).toBe(1)
   })
 
   it("should timeout the get request", async () => {
-    const confidant = Confidant(null as any, {
-      task: Echo(TIMEOUT + 1),
-    })
+    const confidant = Confidant(
+      null as any,
+      {
+        task: Echo(true, 1000),
+      },
+      {
+        timeout: `${TIMEOUT}ms`,
+      },
+    )
 
     const initPromise = confidant.runInitialize("task")
 
@@ -110,8 +96,6 @@ describe("Confidant", () => {
     const onError = jest.fn()
 
     try {
-      jest.advanceTimersByTime(TIMEOUT)
-
       await initPromise
     } catch {
       onError()
@@ -137,11 +121,7 @@ describe("Confidant", () => {
 
     confidant.onUpdate("task1", onUpdate)
 
-    const resultPromise = confidant.runInitialize("task1")
-
-    jest.advanceTimersByTime(DELAY)
-
-    await resultPromise
+    await confidant.runInitialize("task1")
 
     confidant.tasks.task1.update(n => n * 2)
 
@@ -199,11 +179,7 @@ describe("Confidant", () => {
 
     confidant.onUpdate("task", onUpdate)
 
-    const promise = confidant.replaceKey("task", Echo(5))
-
-    jest.advanceTimersByTime(DELAY)
-
-    await promise
+    await confidant.replaceKey("task", Echo(5))
 
     expect(onUpdate).toHaveBeenCalledWith(5)
   })
@@ -237,11 +213,7 @@ describe("Confidant", () => {
 
     confidant.onUpdate("task1", onUpdate)
 
-    const resultPromise = confidant.runInitialize("task1")
-
-    jest.advanceTimersByTime(DELAY)
-
-    await resultPromise
+    await confidant.runInitialize("task1")
 
     const invalidatePromise = confidant.invalidate("task1")
 

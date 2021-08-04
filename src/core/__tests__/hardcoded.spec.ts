@@ -6,8 +6,6 @@ describe("Hardcoded", () => {
 
     const resultPromise = task.runInitialize()
 
-    jest.runAllTimers()
-
     const result = await resultPromise
 
     expect(result).toBe(5)
@@ -18,10 +16,10 @@ describe("Hardcoded", () => {
 
     const resultPromise = task.runInitialize()
 
-    jest.advanceTimersByTime(1)
+    const before = Date.now()
+    await resultPromise
+    const after = Date.now()
 
-    const result = await resultPromise
-
-    expect(result).toBe(5)
+    expect(after - before).toBeLessThan(10)
   })
 })

@@ -1,6 +1,6 @@
 import { sign } from "jsonwebtoken"
 import { DecodedJWT } from "../decodedJWT"
-import { TEST_CONFIDANT } from "./jwt.spec"
+import { getTestConfidant } from "./confidantStub"
 
 describe("DecodedJWT", () => {
   it("should allow custom decoding of jwt string", async () => {
@@ -17,7 +17,7 @@ describe("DecodedJWT", () => {
 
     const boundDecoder = DecodedJWT(validator)
     const taskMaker = boundDecoder(jwt)
-    const task = taskMaker(TEST_CONFIDANT)
+    const task = taskMaker(getTestConfidant())
     const result = await task.runInitialize()
 
     expect(result).toMatchObject({ num: 1 })

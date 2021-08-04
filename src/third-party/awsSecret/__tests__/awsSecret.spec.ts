@@ -73,7 +73,7 @@ describe("AWSSecret", () => {
   })
 
   it("should refetch on a schedule", async () => {
-    const awsManager1m = new AWSManager(secretsManager, "1m")
+    const awsManager1m = new AWSManager(secretsManager, "2s")
 
     const results = ["1", "2", "3"]
     mockGetSecretValue.mockImplementation(
@@ -107,8 +107,6 @@ describe("AWSSecret", () => {
       })
     })
 
-    jest.advanceTimersByTime(60000)
-
     const resultB = await promiseA
 
     expect(onUpdate).toHaveBeenCalledTimes(1)
@@ -120,8 +118,6 @@ describe("AWSSecret", () => {
         onUpdate(value)
       })
     })
-
-    jest.advanceTimersByTime(60000)
 
     const resultC = await promiseB
 

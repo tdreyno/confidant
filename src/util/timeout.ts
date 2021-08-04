@@ -1,8 +1,12 @@
-export const timeout = <V>(ms: number) =>
-  new Promise<V>((_, reject) => {
+export const timeout = (ms: number, errorOnComplete = true) =>
+  new Promise((resolve, reject) => {
     if (!isFinite(ms)) {
       return
     }
 
-    setTimeout(() => reject(`Timed out in ${ms}ms`), ms)
+    const fn = errorOnComplete ? reject : resolve
+
+    setTimeout(() => fn(`Timed out in ${ms}ms`), ms)
   })
+
+export const wait = (ms: number) => timeout(ms, false)

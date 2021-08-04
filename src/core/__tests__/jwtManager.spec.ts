@@ -1,5 +1,5 @@
 import { sign } from "jsonwebtoken"
-import { timeout } from "../../util/timeout"
+import { wait } from "../../util/timeout"
 import { JWTManager } from "../jwtManager"
 
 const JWT = sign({ foo: "bar" }, "secret")
@@ -44,14 +44,8 @@ describe("jwtManager", () => {
     expect(resultA).toBe(JWT)
   })
 
-  it("should immediately notifyOnExpiry when setting already expired JWT", async () => {
-    jest.useRealTimers()
-
+  it("should immediately notifyOnExpiry when setting already expired JWT", () => {
     const expiredJWT = sign({ foo: "bar" }, "secret", { expiresIn: "200ms" })
-
-    try {
-      await timeout(200)
-    } catch (e) {}
 
     const manager = new JWTManager("0s")
 
@@ -60,12 +54,10 @@ describe("jwtManager", () => {
     manager.set("test-key", expiredJWT, onExpiry)
 
     expect(onExpiry).toHaveBeenCalled()
-
-    jest.useFakeTimers()
   })
 
-  it("should notifyOnExpiry when JWT expires", () => {
-    const expiredJWT = sign({ foo: "bar" }, "secret", { expiresIn: "10s" })
+  it("should notifyOnExpiry when JWT expires", async () => {
+    const expiredJWT = sign({ foo: "bar" }, "secret", { expiresIn: "2s" })
 
     const manager = new JWTManager("1s")
 
@@ -75,7 +67,7 @@ describe("jwtManager", () => {
 
     expect(onExpiry).not.toHaveBeenCalled()
 
-    jest.advanceTimersByTime(10000)
+    await wait(2000)
 
     expect(onExpiry).toHaveBeenCalled()
   })
@@ -90,9 +82,9 @@ describe("jwtManager", () => {
     expect(manager.isExpired(expiredJWT2)).toBeFalsy()
   })
 
-  it("should notifyOnExpiry when JWT expires even if it is set twice", () => {
+  it("should notifyOnExpiry when JWT expires even if it is set twice", async () => {
     const expiredJWT1 = sign({ foo: "bar1" }, "secret", { expiresIn: "2s" })
-    const expiredJWT2 = sign({ foo: "bar2" }, "secret", { expiresIn: "5s" })
+    const expiredJWT2 = sign({ foo: "bar2" }, "secret", { expiresIn: "4s" })
 
     const manager = new JWTManager("0s")
 
@@ -103,11 +95,11 @@ describe("jwtManager", () => {
 
     expect(onExpiry).not.toHaveBeenCalled()
 
-    jest.advanceTimersByTime(2000)
+    await wait(2000)
 
     expect(onExpiry).not.toHaveBeenCalled()
 
-    jest.advanceTimersByTime(3000)
+    await wait(2000)
 
     expect(onExpiry).toHaveBeenCalledTimes(1)
   })

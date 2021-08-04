@@ -1,36 +1,20 @@
-import { timeout } from "../timeout"
+import { wait } from "../timeout"
 
-describe("timeout", () => {
+describe("wait", () => {
   it("should resolve after 100s timeout", async () => {
-    const onTimeout = jest.fn()
-
-    const promise = timeout(100).catch(e => (onTimeout(), Promise.reject(e)))
-
-    jest.advanceTimersByTime(100)
-
-    await expect(() => promise).rejects.toBe("Timed out in 100ms")
-
-    expect(onTimeout).toHaveBeenCalled()
+    const result = await wait(100)
+    expect(result).toBe("Timed out in 100ms")
   })
 
   it("should resolve immediately after 0ms timeout", async () => {
-    const onTimeout = jest.fn()
-
-    const promise = timeout(0).catch(e => (onTimeout(), Promise.reject(e)))
-
-    jest.advanceTimersToNextTimer()
-
-    await expect(() => promise).rejects.toBe("Timed out in 0ms")
-
-    expect(onTimeout).toHaveBeenCalled()
+    const result = await wait(0)
+    expect(result).toBe("Timed out in 0ms")
   })
 
   it("should never resolve after Infinite timeout", async () => {
     const onTimeout = jest.fn()
 
-    void timeout(Infinity).then(onTimeout)
-
-    jest.advanceTimersToNextTimer()
+    void wait(Infinity).then(onTimeout)
 
     expect(onTimeout).not.toHaveBeenCalled()
   })
