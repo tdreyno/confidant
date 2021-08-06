@@ -5,6 +5,7 @@ import ms from "ms"
 class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   tasks: { [K in keyof Ms]: Task<C, TaskMakerResult<Ms[K]>> }
   public globalTimeout: number
+  public timeout: string
   public logger: Logger
 
   constructor(
@@ -15,6 +16,7 @@ class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
       timeout: string
     },
   ) {
+    this.timeout = options.timeout
     this.globalTimeout = ms(options.timeout)
     this.logger = options.logger
 

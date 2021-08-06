@@ -15,7 +15,10 @@ export class Group_<
   ) {
     super(confidant)
 
-    this.nestedConfidant = Confidant(this.confidant.context, this.tasks)
+    this.nestedConfidant = Confidant(this.confidant.context, this.tasks, {
+      logger: confidant.logger,
+      timeout: confidant.timeout,
+    })
   }
 
   async initialize(): Promise<V> {
