@@ -40,8 +40,8 @@ const results = await Confidant(
     ),
 
     items: Group({
-      first: Hardcoded(1),
-      last: AWSSecret("last-item"),
+      first: _(1),
+      last: _(1_000_000),
     }),
   },
 ).initialize()
