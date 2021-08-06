@@ -8,22 +8,20 @@ export class Group_<
 > extends Task<C, V> {
   private nestedConfidant: Confidant<C, Record<string, any>>
   private unsubs: Array<() => void> = []
-  private keys: string[]
 
   constructor(
     confidant: Confidant<C, Record<string, any>>,
-    nested: Record<string, TaskMaker<C, any>>,
+    public tasks: Record<string, TaskMaker<C, any>>,
   ) {
     super(confidant)
 
-    this.keys = Object.keys(nested)
-    this.nestedConfidant = Confidant(this.confidant.context, nested)
+    this.nestedConfidant = Confidant(this.confidant.context, this.tasks)
   }
 
   async initialize(): Promise<V> {
     const results: V = await this.nestedConfidant.initialize()
 
-    this.unsubs = this.keys.map(key =>
+    this.unsubs = Object.keys(this.tasks).map(key =>
       this.nestedConfidant.onUpdate(key, () => {
         void this.updateDownstream(key)
       }),
@@ -48,18 +46,22 @@ export class Group_<
   }
 }
 
-export const Group =
-  <
-    C,
-    Ms extends { [key: string]: TaskMaker<any, any> },
-    R extends {
-      [K in keyof Ms]: TaskMakerResult<Ms[K]>
-    },
-  >(
-    nested: Ms,
-  ) =>
-  (manager: Confidant<C, Record<string, any>>) =>
+export const Group = <
+  C,
+  Ms extends { [key: string]: TaskMaker<any, any> },
+  R extends {
+    [K in keyof Ms]: TaskMakerResult<Ms[K]>
+  },
+>(
+  nested: Ms,
+) => {
+  const createTask = (manager: Confidant<C, Record<string, any>>) =>
     new Group_<C, R>(manager, nested)
+
+  createTask.tasks = nested
+
+  return createTask
+}
 
 export type Group<
   C,

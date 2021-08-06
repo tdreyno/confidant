@@ -67,4 +67,27 @@ describe("Group", () => {
     expect(result).toMatchObject({ taskA: 10 })
     expect(onUpdate).toHaveBeenCalledTimes(1)
   })
+
+  it("should be able to merge groups", async () => {
+    const defaultTasks = Group({
+      taskA: Echo(5),
+      taskB: Hardcoded(5),
+    })
+
+    const confidant = Confidant(null as any, {
+      group: Group({
+        ...defaultTasks.tasks,
+        taskB: Inputs("taskA").chain(a => Hardcoded(a * 2)),
+      }),
+    })
+
+    const results = await confidant.initialize()
+
+    expect(results).toMatchObject({
+      group: {
+        taskA: 5,
+        taskB: 10,
+      },
+    })
+  })
 })
