@@ -21,6 +21,7 @@ import {
   Hardcoded as _,
   LaunchDarkly,
   Inputs,
+  Group,
   AWSManager,
 } from "@tdreyno/confidant"
 
@@ -37,6 +38,11 @@ const results = await Confidant(
     featureA: Inputs("launchDarklyKey").chain(
       LaunchDarkly("feature-a", "default-value"),
     ),
+
+    items: Group({
+      first: Hardcoded(1),
+      last: AWSSecret("last-item"),
+    }),
   },
 ).initialize()
 
@@ -54,6 +60,7 @@ console.log(results.featureA)
 - `JWT` is an abstract base class. Create custom JWT tasks by inheriting from it and implementing the `fetchJWT` method which returns a `Promise<string>`
 - `DecodedJWT` is a task which takes a JWT string and a function for converting the decoded object into a typed and validated data structure.
 - `Inputs` is a task which listens to other tasks by key name. When all those tasks are loaded (or updated), pass the values to a dependent task via `.chain`. Allows composition of tasks.
+- `Group` is a task which groups a set of tasks into a single object.
 
 ### Add Logger
 

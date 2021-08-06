@@ -71,6 +71,6 @@ describe("Inputs", () => {
     await task.runInitialize()
 
     // Should not throw
-    await task.updateDownstream()
+    await (task as any).updateDownstream()
   })
 })

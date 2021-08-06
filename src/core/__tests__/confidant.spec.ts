@@ -41,9 +41,7 @@ describe("Confidant", () => {
       task3: Echo(3, 15),
     })
 
-    const resultPromise = confidant.initialize()
-
-    const results = await resultPromise
+    const results = await confidant.initialize()
 
     expect(results).toMatchObject({
       task1: 1,

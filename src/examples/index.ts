@@ -6,6 +6,7 @@ import {
   LaunchDarkly,
   Inputs,
   AWSManager,
+  Group,
 } from "../index"
 
 // const ViceToken = 5 as any
@@ -19,12 +20,10 @@ const DEV = {
     LaunchDarkly("feature-a", "default-value"),
   ),
 
-  // psm: Group({
-  //   url: _("/dev"),
-  //   jwtURL: _("/jwt"),
-  //   creds: AWSSecret("psm-creds"),
-  //   token: Inputs("url", "creds").chain(ViceToken),
-  // }),
+  service: Group({
+    url: _("/dev"),
+    creds: AWSSecret("service-creds"),
+  }),
 }
 
 const PROD = {
@@ -44,4 +43,5 @@ void Confidant(
     confidant.featureA
     confidant.anotherThing
     confidant.url
+    confidant.service.creds
   })

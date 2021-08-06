@@ -31,7 +31,7 @@ export class Inputs_<C, V> extends Task<C, V> {
     return Promise.all(this.keys.map(key => this.confidant.get(key)))
   }
 
-  public async updateDownstream() {
+  private async updateDownstream() {
     const key = this.confidant.keyForTask(this)
 
     if (key) {
