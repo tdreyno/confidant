@@ -38,7 +38,7 @@ export abstract class JWT extends Task<JWTContext, string> {
     const hit = this.manager.get(this.cacheKey)
 
     if (hit) {
-      this.logger.debug(`JWT cache hit: ${this.cacheKey}`)
+      // this.logger.debug(`JWT cache hit: ${this.cacheKey}`)
       return hit
     }
 

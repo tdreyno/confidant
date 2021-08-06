@@ -163,7 +163,7 @@ export abstract class Task<C, V> {
   abstract initialize(): Promise<V>
 
   public get(): Promise<V> {
-    this.logger.debug(`Current task state: ${this.state}`)
+    // this.logger.debug(`Current task state: ${this.state}`)
 
     if (this.state === TaskState.DESTROYED) {
       return Promise.reject("Task has been destroyed")
