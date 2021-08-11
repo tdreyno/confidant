@@ -9,6 +9,7 @@ type JWTContext = any
 export abstract class JWT extends Task<JWTContext, string> {
   constructor(
     confidant: Confidant<JWTContext, Record<string, any>>,
+    public name: string,
     protected cacheKey: string,
     protected manager: JWTManager,
     protected retry: AsyncRetry.Options = {},
@@ -20,7 +21,7 @@ export abstract class JWT extends Task<JWTContext, string> {
 
   initialize(): Promise<string> {
     if (this.state !== TaskState.PENDING) {
-      throw new Error("Task has already initialized")
+      throw new Error(`JWT Task (${this.name}) has already initialized`)
     }
 
     return this.retryFetchJWT()
@@ -32,27 +33,27 @@ export abstract class JWT extends Task<JWTContext, string> {
 
   protected async retryFetchJWT(): Promise<string> {
     if (this.state === TaskState.DESTROYED) {
-      throw new Error("Task has been destroyed")
+      throw new Error(`JWT Task (${this.name}) has been destroyed`)
     }
 
     const hit = this.manager.get(this.cacheKey)
 
     if (hit) {
-      // this.logger.debug(`JWT cache hit: ${this.cacheKey}`)
+      // this.logger.debug(`JWT cache hit: ${this.name} - ${this.cacheKey}`)
       return hit
     }
 
     try {
-      this.logger.debug(`Fetching JWT: ${this.cacheKey}`)
+      this.logger.debug(`JWT Fetching (${this.name})`)
       const jwt = await retry(() => this.fetchJWT(), this.retry)
-      this.logger.debug(`Got JWT: ${shorten(jwt)}`)
+      this.logger.debug(`JWT Received (${this.name}): ${shorten(jwt)}`)
 
       this.manager.set(this.cacheKey, jwt, () => {
         if (this.state === TaskState.DESTROYED) {
           return true // unsubscribe
         }
 
-        this.logger.debug(`JWT expired: ${this.cacheKey}`)
+        this.logger.debug(`JWT expired (${this.name})`)
         void this.invalidate()
       })
 

@@ -35,7 +35,7 @@ describe("JWT", () => {
     type TestJWTData = any
     class TestJWT extends JWT {
       constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
-        super(confidant, "test-cache-key", manager)
+        super(confidant, "TestJWT", "test-cache-key", manager)
       }
 
       async fetchJWT(): Promise<string> {
@@ -72,7 +72,7 @@ describe("JWT", () => {
         confidant: Confidant<TestJWTData, Record<string, any>>,
         cacheKey: string,
       ) {
-        super(confidant, cacheKey, manager)
+        super(confidant, "TestJWT", cacheKey, manager)
       }
 
       async fetchJWT(): Promise<string> {
@@ -127,7 +127,7 @@ describe("JWT", () => {
 
     class TestJWT extends JWT {
       constructor(confidant: Confidant<any, Record<string, any>>) {
-        super(confidant, "test-key", manager, {
+        super(confidant, "TestJWT", "test-key", manager, {
           onRetry: err => {
             this.logger.error(err)
           },
@@ -200,7 +200,7 @@ describe("JWT", () => {
 
     class TestJWT extends JWT {
       constructor(confidant: Confidant<any, Record<string, any>>) {
-        super(confidant, "test-key", manager)
+        super(confidant, "TestJWT", "test-key", manager)
       }
 
       async fetchJWT(): Promise<string> {
@@ -262,7 +262,7 @@ describe("JWT", () => {
 
     class TestJWT extends JWT {
       constructor(confidant: Confidant<any, Record<string, any>>) {
-        super(confidant, "test-cache-key", manager, {
+        super(confidant, "TestJWT", "test-cache-key", manager, {
           randomize: false,
           minTimeout: 100,
           onRetry,
@@ -310,7 +310,7 @@ describe("JWT", () => {
     type TestJWTData = any
     class TestJWT extends JWT {
       constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
-        super(confidant, "test-cache-key", manager, {
+        super(confidant, "TestJWT", "test-cache-key", manager, {
           randomize: false,
           retries: 3,
           minTimeout: 100,
