@@ -1,6 +1,6 @@
 {
   "name": "@tdreyno/confidant",
-  "version": "0.0.0",
+  "version": "1.11.0",
   "repository": "https://github.com/tdreyno/confidant.git",
   "publishConfig": {
     "access": "public"
