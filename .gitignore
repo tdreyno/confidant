@@ -1,5 +1,5 @@
 node_modules
-pkg
+dist
 .DS_Store
 report.*
 yarn-error.log

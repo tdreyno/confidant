@@ -2,8 +2,8 @@ import { rest } from "msw"
 import { setupServer } from "msw/node"
 import { sign } from "jsonwebtoken"
 import fetch from "node-fetch"
-import { JWTManager } from "../jwtManager"
-import { JWT } from "../jwt"
+import { TokenManager } from "../tokenManager"
+import { Token } from "../token"
 import { Confidant } from "../task"
 import { wait } from "../../util/timeout"
 import { getTestConfidant } from "./confidantStub"
@@ -30,15 +30,15 @@ describe("JWT", () => {
       }),
     )
 
-    const manager = new JWTManager()
+    const manager = new TokenManager()
 
     type TestJWTData = any
-    class TestJWT extends JWT {
+    class TestJWT extends Token {
       constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
         super(confidant, "TestJWT", "test-cache-key", manager)
       }
 
-      async fetchJWT(): Promise<string> {
+      async fetchToken(): Promise<string> {
         const res = await fetch(URL, {
           method: "POST",
         })
@@ -64,10 +64,10 @@ describe("JWT", () => {
       }),
     )
 
-    const manager = new JWTManager()
+    const manager = new TokenManager()
 
     type TestJWTData = any
-    class TestJWT extends JWT {
+    class TestJWT extends Token {
       constructor(
         confidant: Confidant<TestJWTData, Record<string, any>>,
         cacheKey: string,
@@ -75,7 +75,7 @@ describe("JWT", () => {
         super(confidant, "TestJWT", cacheKey, manager)
       }
 
-      async fetchJWT(): Promise<string> {
+      async fetchToken(): Promise<string> {
         const res = await fetch(URL, {
           method: "POST",
         })
@@ -123,9 +123,9 @@ describe("JWT", () => {
       }),
     )
 
-    const manager = new JWTManager("0s")
+    const manager = new TokenManager("0s")
 
-    class TestJWT extends JWT {
+    class TestJWT extends Token {
       constructor(confidant: Confidant<any, Record<string, any>>) {
         super(confidant, "TestJWT", "test-key", manager, {
           onRetry: err => {
@@ -134,7 +134,7 @@ describe("JWT", () => {
         })
       }
 
-      async fetchJWT(): Promise<string> {
+      async fetchToken(): Promise<string> {
         const res = await fetch(URL, {
           method: "POST",
         })
@@ -196,14 +196,14 @@ describe("JWT", () => {
       }),
     )
 
-    const manager = new JWTManager()
+    const manager = new TokenManager()
 
-    class TestJWT extends JWT {
+    class TestJWT extends Token {
       constructor(confidant: Confidant<any, Record<string, any>>) {
         super(confidant, "TestJWT", "test-key", manager)
       }
 
-      async fetchJWT(): Promise<string> {
+      async fetchToken(): Promise<string> {
         const res = await fetch(URL, {
           method: "POST",
         })
@@ -258,9 +258,9 @@ describe("JWT", () => {
       }),
     )
 
-    const manager = new JWTManager()
+    const manager = new TokenManager()
 
-    class TestJWT extends JWT {
+    class TestJWT extends Token {
       constructor(confidant: Confidant<any, Record<string, any>>) {
         super(confidant, "TestJWT", "test-cache-key", manager, {
           randomize: false,
@@ -269,7 +269,7 @@ describe("JWT", () => {
         })
       }
 
-      async fetchJWT(): Promise<string> {
+      async fetchToken(): Promise<string> {
         const res = await fetch(URL, {
           method: "POST",
         })
@@ -305,10 +305,10 @@ describe("JWT", () => {
       }),
     )
 
-    const manager = new JWTManager()
+    const manager = new TokenManager()
 
     type TestJWTData = any
-    class TestJWT extends JWT {
+    class TestJWT extends Token {
       constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
         super(confidant, "TestJWT", "test-cache-key", manager, {
           randomize: false,
@@ -318,7 +318,7 @@ describe("JWT", () => {
         })
       }
 
-      async fetchJWT(): Promise<string> {
+      async fetchToken(): Promise<string> {
         const res = await fetch(URL, {
           method: "POST",
         })

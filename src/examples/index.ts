@@ -1,15 +1,8 @@
 import { SecretsManager } from "aws-sdk"
-import {
-  Confidant,
-  AWSSecret,
-  Hardcoded as _,
-  LaunchDarkly,
-  Inputs,
-  AWSManager,
-  Group,
-} from "../index"
+import { Confidant, Hardcoded as _, Inputs, Group } from "../index"
+import { AWSSecret, AWSManager } from "../third-party/awsSecret/index"
+import { LaunchDarkly } from "../third-party/launchDarkly"
 
-// const ViceToken = 5 as any
 const DEV = {
   url: _("/dev"),
   psmServiceAccount: AWSSecret("MyViasat-TSUsage/PSM/serviceAccount"),

@@ -1,8 +1,8 @@
-import { decode } from "jsonwebtoken"
 import ms from "ms"
 import { createLogger, Logger } from "winston"
 import { formatDistanceToNow } from "date-fns"
 import { shorten } from "../util/shorten"
+import { nextRefreshTime } from "../util/jwtExpiry"
 
 type KeyCache = {
   [key: string]: {
@@ -11,7 +11,7 @@ type KeyCache = {
   }
 }
 
-export class JWTManager {
+export class TokenManager {
   public cache: KeyCache = {}
   private logger: Logger
   private refetchBufferTimeMs: number
@@ -61,6 +61,10 @@ export class JWTManager {
     key: string,
     jwt: string,
     notifyOnExpiry: () => true | undefined = () => void 0,
+    expiresAt: (
+      token: string,
+      refetchBufferTimeMs?: number,
+    ) => number = nextRefreshTime,
   ): void {
     const doNotify = () => {
       const result = notifyOnExpiry()
@@ -72,7 +76,11 @@ export class JWTManager {
       }
     }
 
-    if (this.isExpired(jwt)) {
+    const delay = expiresAt(jwt, this.refetchBufferTimeMs)
+
+    const isExpired = isFinite(delay) && delay <= 0
+
+    if (isExpired) {
       this.logger.debug(
         "Tried to set a jwt that is already expired. Calling onExpiry immediately.",
       )
@@ -90,8 +98,6 @@ export class JWTManager {
     this.cache[key] = { jwt }
 
     this.logger.debug(`Set JWT: ${shorten(jwt)}`)
-
-    const delay = this.nextRefreshTime(jwt)
 
     if (isFinite(delay)) {
       this.logger.debug(
@@ -126,23 +132,7 @@ export class JWTManager {
 
     delete this.cache[key]
   }
-
-  private nextRefreshTime(data: string): number {
-    const jwtData = decode(data) as unknown as { exp?: number }
-
-    if (!jwtData.exp) {
-      return Infinity
-    }
-
-    const expiryMs = jwtData.exp * 1000
-    const now = Date.now()
-    const timeTilExpireMs = expiryMs - now
-    return timeTilExpireMs - this.refetchBufferTimeMs
-  }
-
-  public isExpired(jwt: string): boolean {
-    const delay = this.nextRefreshTime(jwt)
-
-    return isFinite(delay) && delay <= 0
-  }
 }
+
+// Backwards compat
+export const JWTManager = TokenManager

@@ -19,7 +19,7 @@
     "declarationMap": true,
     "baseUrl": "./packages",
     "rootDir": "./src",
-    "outDir": "./pkg/dist-types",
+    "outDir": "./dist/esm",
     "resolveJsonModule": true
   },
   "include": ["./src"],

@@ -57,7 +57,7 @@ console.log(results.featureA)
 - `AWSSecret`: A task which loads a **string** secret from AWS Secret Manager. Must include an instance of `awsManager` in the `Confidant` context.
 - `AWSJSONSecret`: A task which loads a **JSON** secret from AWS Secret Manager. Must include an instance of `awsManager` in the `Confidant` context.
 - `LaunchDarkly`: A task which loads a feature flag when provided a `launchDarklyUser` object in the `Confidant` context.
-- `JWT` is an abstract base class. Create custom JWT tasks by inheriting from it and implementing the `fetchJWT` method which returns a `Promise<string>`
+- `Token` is an abstract base class. Create custom Token tasks by inheriting from it and implementing the `fetchToken` method which returns a `Promise<string>`
 - `DecodedJWT` is a task which takes a JWT string and a function for converting the decoded object into a typed and validated data structure.
 - `Inputs` is a task which listens to other tasks by key name. When all those tasks are loaded (or updated), pass the values to a dependent task via `.chain`. Allows composition of tasks.
 - `Group` is a task which groups a set of tasks into a single object.
@@ -72,7 +72,7 @@ Can be used to forward logs to 3rd party logging platforms.
 import { createLogger, transports } from "winston"
 import { Confidant, Task } from "@tdreyno/confidant"
 
-class MyToken extends JWT<MyTokenData> {
+class MyToken extends Token<MyTokenData> {
   constructor(
     confidant: Confidant<MyTokenData, Record<string, any>>,
     private url: string,
@@ -82,7 +82,7 @@ class MyToken extends JWT<MyTokenData> {
     super(confidant)
   }
 
-  fetchJWT(): Promise<string> {
+  fetchToken(): Promise<string> {
     this.logger.log("My message")
 
     return fetch(this.url)
