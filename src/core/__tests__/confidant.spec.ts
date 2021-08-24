@@ -103,7 +103,12 @@ describe("Confidant", () => {
   })
 
   it("should error when getting an invalid key", async () => {
-    const confidant = Confidant(null as any, {})
+    const confidant = Confidant(
+      {},
+      {
+        task1: Echo(5),
+      },
+    )
 
     await expect(() => (confidant.get as any)("fake")).rejects.toBeInstanceOf(
       Error,
@@ -193,7 +198,12 @@ describe("Confidant", () => {
   })
 
   it("should fail to lookup tasks", () => {
-    const confidant = Confidant(null as any, {})
+    const confidant = Confidant(
+      {},
+      {
+        task1: Echo(5),
+      },
+    )
 
     const task = Echo(1)(confidant)
 

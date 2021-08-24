@@ -28,6 +28,9 @@ const PROD = {
 void Confidant(
   {
     awsManager: new AWSManager(new SecretsManager({ region: "ap-south-1" })),
+    launchDarklyUser: {
+      key: "test",
+    },
   },
   PROD,
 )

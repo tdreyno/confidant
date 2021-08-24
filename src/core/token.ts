@@ -4,12 +4,11 @@ import { shorten } from "../util/shorten"
 import { nextRefreshTime } from "../util/jwtExpiry"
 import { TokenManager } from "./tokenManager"
 import { Confidant, Task, TaskState } from "./task"
+import { EmptyContext } from "../util/emptyContext"
 
-type TokenContext = any
-
-export abstract class Token extends Task<TokenContext, string> {
+export abstract class Token extends Task<EmptyContext, string> {
   constructor(
-    confidant: Confidant<TokenContext, Record<string, any>>,
+    confidant: Confidant<EmptyContext, Record<string, any>>,
     public name: string,
     protected cacheKey: string,
     protected manager: TokenManager,

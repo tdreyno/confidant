@@ -1,15 +1,14 @@
 import { decode } from "jsonwebtoken"
-import { Task, TaskMaker } from "./task"
+import { Confidant, Task, TaskMaker } from "./task"
+import { EmptyContext } from "../util/emptyContext"
 
-type DecodedJWTContext = any
-
-class DecodedJWT_<T> extends Task<DecodedJWTContext, T> {
+class DecodedJWT_<T> extends Task<EmptyContext, T> {
   constructor(
-    manager: DecodedJWTContext,
+    confidant: Confidant<EmptyContext, Record<string, any>>,
     private jwt: string,
     private validator: (jwt: unknown) => T,
   ) {
-    super(manager)
+    super(confidant)
   }
 
   async initialize(): Promise<T> {
@@ -19,7 +18,7 @@ class DecodedJWT_<T> extends Task<DecodedJWTContext, T> {
 
 export const DecodedJWT =
   <T>(validator: (jwt: unknown) => T) =>
-  (jwt: string): TaskMaker<DecodedJWTContext, T> =>
+  (jwt: string): TaskMaker<EmptyContext, T> =>
   manager =>
     new DecodedJWT_(manager, jwt, validator)
 

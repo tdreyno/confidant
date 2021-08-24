@@ -1,18 +1,18 @@
-import { Confidant, Task, TaskMaker, TaskMakerResult } from "./task"
+import { Confidant, GetContext, Task, TaskMaker, TaskMakerResult } from "./task"
 
 export class Group_<
-  C,
+  Ms extends {
+    [key: string]: TaskMaker<any, any>
+  },
+  C extends GetContext<Ms>,
   V extends {
-    [key: string]: any
+    [K in keyof Ms]: TaskMakerResult<Ms[K]>
   },
 > extends Task<C, V> {
   private nestedConfidant: Confidant<C, Record<string, any>>
   private unsubs: Array<() => void> = []
 
-  constructor(
-    confidant: Confidant<C, Record<string, any>>,
-    public tasks: Record<string, TaskMaker<C, any>>,
-  ) {
+  constructor(confidant: Confidant<C, Record<string, any>>, public tasks: Ms) {
     super(confidant)
 
     this.nestedConfidant = Confidant(this.confidant.context, this.tasks, {
@@ -50,16 +50,18 @@ export class Group_<
 }
 
 export const Group = <
-  C,
-  Ms extends { [key: string]: TaskMaker<any, any> },
+  Ms extends {
+    [key: string]: TaskMaker<any, any>
+  },
+  C extends GetContext<Ms>,
   R extends {
     [K in keyof Ms]: TaskMakerResult<Ms[K]>
   },
 >(
   nested: Ms,
-) => {
+): TaskMaker<C, R> & { tasks: Ms } => {
   const createTask = (manager: Confidant<C, Record<string, any>>) =>
-    new Group_<C, R>(manager, nested)
+    new Group_<Ms, C, R>(manager, nested)
 
   createTask.tasks = nested
 
@@ -67,8 +69,11 @@ export const Group = <
 }
 
 export type Group<
-  C,
-  R extends {
-    [key: string]: any
+  Ms extends {
+    [key: string]: TaskMaker<any, any>
   },
-> = Group_<C, R>
+  C extends GetContext<Ms>,
+  R extends {
+    [K in keyof Ms]: TaskMakerResult<Ms[K]>
+  },
+> = Group_<Ms, C, R>

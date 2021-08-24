@@ -1,10 +1,12 @@
-import { Task, TaskMaker } from "./task"
+import { EmptyContext } from "../util/emptyContext"
+import { Confidant, Task, TaskMaker } from "./task"
 
-type HardcodedContext = any
-
-class Hardcoded_<T> extends Task<HardcodedContext, T> {
-  constructor(manager: HardcodedContext, private value: T) {
-    super(manager)
+class Hardcoded_<T> extends Task<EmptyContext, T> {
+  constructor(
+    confidant: Confidant<EmptyContext, Record<string, any>>,
+    private value: T,
+  ) {
+    super(confidant)
   }
 
   initialize(): Promise<T> {
@@ -13,7 +15,7 @@ class Hardcoded_<T> extends Task<HardcodedContext, T> {
 }
 
 export const Hardcoded =
-  <T>(value: T): TaskMaker<HardcodedContext, T> =>
+  <T>(value: T): TaskMaker<EmptyContext, T> =>
   manager =>
     new Hardcoded_(manager, value)
 

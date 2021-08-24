@@ -1,8 +1,12 @@
 import { timeout } from "../util/timeout"
 import { createLogger, Logger } from "winston"
 import ms from "ms"
+import { U } from "ts-toolbelt"
 
-class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
+class Confidant_<
+  C extends Record<string, any>,
+  Ms extends Record<string, TaskMaker<C, any>>,
+> {
   tasks: { [K in keyof Ms]: Task<C, TaskMakerResult<Ms[K]>> }
   public globalTimeout: number
   public timeout: string
@@ -21,7 +25,7 @@ class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
     this.logger = options.logger
 
     this.tasks = Object.entries(taskMakers).reduce((acc: any, [key, maker]) => {
-      acc[key] = maker(this)
+      acc[key] = maker(this as any)
       return acc
     }, {})
   }
@@ -46,7 +50,7 @@ class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   ): Promise<void> {
     const oldTask = this.tasks[key]
 
-    const task = taskMaker(this)
+    const task = taskMaker(this as any)
 
     task.updateListeners = new Set([...oldTask.updateListeners])
 
@@ -100,17 +104,29 @@ class Confidant_<C extends any, Ms extends Record<string, TaskMaker<C, any>>> {
   }
 }
 
+type ValueOf<T> = T[keyof T]
+
+type KeyToContext<
+  O extends {
+    [key: string]: TaskMaker<any, any>
+  },
+> = {
+  [K in keyof O]: TaskMakerContext<O[K]>
+}
+
+export type GetContext<
+  O extends {
+    [key: string]: TaskMaker<any, any>
+  },
+> = Omit<U.Merge<ValueOf<KeyToContext<O>>>, "__empty">
+
 export const Confidant = <
   Ms extends {
     [key: string]: TaskMaker<any, any>
   },
-  C = Ms extends {
-    [key: string]: TaskMaker<infer PossibleC, any>
-  }
-    ? PossibleC
-    : never,
+  Cs extends GetContext<Ms>,
 >(
-  context: C,
+  context: Cs,
   taskMakers: Ms,
   options?: {
     logger?: Logger
@@ -127,7 +143,7 @@ export const Confidant = <
   })
 
 export type Confidant<
-  C extends any,
+  C extends Record<string, any>,
   Ms extends Record<string, TaskMaker<C, any>>,
 > = Confidant_<C, Ms>
 
@@ -267,14 +283,14 @@ export abstract class Task<C, V> {
   }
 }
 
-export type TaskMaker<C, V> = (
+export type TaskMaker<C extends Record<string, any>, V> = (
   manager: Confidant_<C, Record<string, any>>,
 ) => Task<C, V>
 
 export type TaskMakerResult<T extends TaskMaker<any, any>> =
   T extends TaskMaker<any, infer V> ? V : never
 
-export type TaskMakerContext<T extends TaskMaker<any, any>> =
+export type TaskMakerContext<T extends TaskMaker<Record<string, any>, any>> =
   T extends TaskMaker<infer C, any> ? C : never
 
 export type TaskResult<T extends Task<any, any>> = T extends Task<any, infer V>

@@ -43,7 +43,7 @@ export class Inputs_<C, V> extends Task<C, V> {
 
 export const Inputs = (...keys: string[]) => ({
   chain:
-    <C, V>(fn: (...values: any[]) => TaskMaker<C, V>) =>
+    <C, V>(fn: (...values: any[]) => TaskMaker<C, V>): TaskMaker<C, V> =>
     (manager: Confidant<C, Record<string, any>>) =>
       new Inputs_(manager, keys, fn),
 })

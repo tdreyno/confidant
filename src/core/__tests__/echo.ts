@@ -1,17 +1,17 @@
 import { Confidant, Task, TaskMaker } from "../task"
 import { wait } from "../../util/timeout"
+import { EmptyContext } from "../../util/emptyContext"
 
 export const DELAY = 100
 export const TIMEOUT = 1000
 
-type EchoContext = any
-class Echo_<T> extends Task<EchoContext, T> {
+class Echo_<T> extends Task<EmptyContext, T> {
   constructor(
-    manager: Confidant<EchoContext, Record<string, any>>,
+    confidant: Confidant<EmptyContext, Record<string, any>>,
     private value: T,
     private delay: number,
   ) {
-    super(manager, `${TIMEOUT}ms`)
+    super(confidant, `${TIMEOUT}ms`)
   }
 
   async initialize(): Promise<T> {
@@ -22,7 +22,7 @@ class Echo_<T> extends Task<EchoContext, T> {
 }
 
 export const Echo =
-  <T>(value: T, delay = DELAY): TaskMaker<EchoContext, T> =>
+  <T>(value: T, delay = DELAY): TaskMaker<EmptyContext, T> =>
   manager =>
     new Echo_(manager, value, delay)
 
