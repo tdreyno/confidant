@@ -61,7 +61,7 @@
     "@types/ms": "^0.7.31",
     "@types/node-fetch": "^2.5.12",
     "@typescript-eslint/eslint-plugin": "^4.28.1",
-    "@typescript-eslint/parser": "^4.28.1",
+    "@typescript-eslint/parser": "^4.30.0",
     "aws-sdk": "^2.966.0",
     "commitizen": "^4.2.4",
     "cz-conventional-changelog": "3.3.0",
