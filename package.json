@@ -72,7 +72,7 @@
     "jest": "^27.0.6",
     "launchdarkly-node-server-sdk": "^6.2.0",
     "lint-staged": "^11.1.1",
-    "msw": "^0.33.2",
+    "msw": "^0.35.0",
     "node-fetch": "^2.6.1",
     "prettier": "^2.3.2",
     "semantic-release": "^17.4.7",
