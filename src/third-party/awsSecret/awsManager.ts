@@ -9,14 +9,14 @@ type KeyCache = {
 }
 
 export class AWSManager {
-  public cache: KeyCache = {}
-  private refetchTimeMs: number
+  cache: KeyCache = {}
+  refetchTimeMs_: number
 
   /**
    * https://github.com/vercel/ms
    **/
   constructor(public secretsManager: SecretsManager, refetchTimeMs = "5m") {
-    this.refetchTimeMs = ms(refetchTimeMs)
+    this.refetchTimeMs_ = ms(refetchTimeMs)
     this.clear()
   }
 
@@ -43,7 +43,7 @@ export class AWSManager {
     if (notifyOnExpiry) {
       const timeoutId = setTimeout(() => {
         notifyOnExpiry()
-      }, this.refetchTimeMs)
+      }, this.refetchTimeMs_)
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.cache[key]!.timeoutId = timeoutId

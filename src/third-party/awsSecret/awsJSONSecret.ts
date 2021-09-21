@@ -5,17 +5,17 @@ class AWSJSONSecret_<V> extends AWSSecret_<V> {
   constructor(
     confidant: Confidant<AWSSecretContext, Record<string, any>>,
     key: string,
-    private validate: (data: unknown) => V,
+    public validate_: (data: unknown) => V,
   ) {
     super(confidant, key)
   }
 
-  decodeSecret(data: string): Record<string, unknown> {
+  decodeSecret_(data: string): Record<string, unknown> {
     return JSON.parse(data)
   }
 
   validateSecretData(data: Record<string, unknown>): V {
-    return this.validate(data)
+    return this.validate_(data)
   }
 }
 

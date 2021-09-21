@@ -8,30 +8,30 @@ export interface AWSSecretContext {
 export class AWSSecret_<V = string> extends Task<AWSSecretContext, V> {
   constructor(
     confidant: Confidant<AWSSecretContext, Record<string, any>>,
-    private key: string,
+    public key_: string,
   ) {
     super(confidant)
   }
 
   async initialize(): Promise<V> {
-    const { awsManager } = this.confidant.context
+    const { awsManager } = this.confidant_.context
 
     return awsManager
-      .fetch(this.key, () => {
+      .fetch(this.key_, () => {
         void this.fetch()
       })
-      .then(string => this.decodeSecret(string))
+      .then(string => this.decodeSecret_(string))
       .then(data => this.validateSecretData(data))
   }
 
   async fetch(): Promise<V> {
-    const { awsManager } = this.confidant.context
+    const { awsManager } = this.confidant_.context
 
     const value = await awsManager
-      .fetch(this.key, () => {
+      .fetch(this.key_, () => {
         void this.fetch()
       })
-      .then(string => this.decodeSecret(string))
+      .then(string => this.decodeSecret_(string))
       .then(data => this.validateSecretData(data))
 
     this.set(value)
@@ -39,7 +39,7 @@ export class AWSSecret_<V = string> extends Task<AWSSecretContext, V> {
     return value
   }
 
-  protected decodeSecret(data: string): unknown {
+  decodeSecret_(data: string): unknown {
     return data
   }
 

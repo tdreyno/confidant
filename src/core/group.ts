@@ -9,32 +9,32 @@ export class Group_<
     [K in keyof Ms]: TaskMakerResult<Ms[K]>
   },
 > extends Task<C, V> {
-  private nestedConfidant: Confidant<C, Record<string, any>>
-  private unsubs: Array<() => void> = []
+  nestedConfidant_: Confidant<C, Record<string, any>>
+  unsubs_: Array<() => void> = []
 
   constructor(confidant: Confidant<C, Record<string, any>>, public tasks: Ms) {
     super(confidant)
 
-    this.nestedConfidant = Confidant(this.confidant.context, this.tasks, {
-      logger: confidant.logger,
-      timeout: confidant.timeout,
+    this.nestedConfidant_ = Confidant(this.confidant_.context, this.tasks, {
+      logger: this.confidant_.logger,
+      timeout: this.confidant_.timeout,
     })
   }
 
   async initialize(): Promise<V> {
-    const results: V = await this.nestedConfidant.initialize()
+    const results: V = await this.nestedConfidant_.initialize()
 
-    this.unsubs = Object.keys(this.tasks).map(key =>
-      this.nestedConfidant.onUpdate(key, () => {
-        void this.updateDownstream(key)
+    this.unsubs_ = Object.keys(this.tasks).map(key =>
+      this.nestedConfidant_.onUpdate(key, () => {
+        void this.updateDownstream_(key)
       }),
     )
 
     return results
   }
 
-  private async updateDownstream(key: string) {
-    const updated = await this.nestedConfidant.get(key)
+  async updateDownstream_(key: string) {
+    const updated = await this.nestedConfidant_.get(key)
 
     this.update(current => {
       return {
@@ -44,8 +44,8 @@ export class Group_<
     })
   }
 
-  onDestroy() {
-    this.unsubs.forEach(unsub => unsub())
+  onDestroy_() {
+    this.unsubs_.forEach(unsub => unsub())
   }
 }
 
@@ -60,8 +60,8 @@ export const Group = <
 >(
   nested: Ms,
 ): TaskMaker<C, R> & { tasks: Ms } => {
-  const createTask = (manager: Confidant<C, Record<string, any>>) =>
-    new Group_<Ms, C, R>(manager, nested)
+  const createTask = (confidant: Confidant<C, Record<string, any>>) =>
+    new Group_<Ms, C, R>(confidant, nested)
 
   createTask.tasks = nested
 

@@ -75,9 +75,9 @@ import { Confidant, Task } from "@tdreyno/confidant"
 class MyToken extends Token<MyTokenData> {
   constructor(
     confidant: Confidant<MyTokenData, Record<string, any>>,
-    private url: string,
-    private username: string,
-    private password: string,
+    public url_: string,
+    public username_: string,
+    public password_: string,
   ) {
     super(confidant)
   }
@@ -85,7 +85,10 @@ class MyToken extends Token<MyTokenData> {
   fetchToken(): Promise<string> {
     this.logger.log("My message")
 
-    return fetch(this.url)
+    return fetch(this.url_, {
+      username: this.username_,
+      password: this.password_,
+    })
   }
 }
 

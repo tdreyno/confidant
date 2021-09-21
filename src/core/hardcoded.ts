@@ -4,13 +4,13 @@ import { Confidant, Task, TaskMaker } from "./task"
 class Hardcoded_<T> extends Task<EmptyContext, T> {
   constructor(
     confidant: Confidant<EmptyContext, Record<string, any>>,
-    private value: T,
+    public value_: T,
   ) {
     super(confidant)
   }
 
   initialize(): Promise<T> {
-    return Promise.resolve(this.value)
+    return Promise.resolve(this.value_)
   }
 }
 
