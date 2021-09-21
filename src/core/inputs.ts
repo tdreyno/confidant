@@ -1,42 +1,42 @@
 import { Confidant, Task, TaskMaker } from "./task"
 
 export class Inputs_<C, V> extends Task<C, V> {
-  private unsubs: Array<() => void> = []
+  unsubs_: Array<() => void> = []
 
   constructor(
     confidant: Confidant<C, Record<string, any>>,
-    private keys: string[],
-    private fn: (...values: any[]) => TaskMaker<C, V>,
+    public keys_: string[],
+    public fn_: (...values: any[]) => TaskMaker<C, V>,
   ) {
     super(confidant)
   }
 
   async initialize(): Promise<V> {
-    const results = await this.getResults()
+    const results = await this.getResults_()
 
-    this.unsubs = this.keys.map(key =>
-      this.confidant.onUpdate(key, () => {
-        void this.updateDownstream()
+    this.unsubs_ = this.keys_.map(key =>
+      this.confidant_.onUpdate(key, () => {
+        void this.updateDownstream_()
       }),
     )
 
-    return this.fn(...results)(this.confidant).runInitialize()
+    return this.fn_(...results)(this.confidant_).runInitialize()
   }
 
-  onDestroy() {
-    this.unsubs.forEach(unsub => unsub())
+  onDestroy_() {
+    this.unsubs_.forEach(unsub => unsub())
   }
 
-  private getResults(): Promise<unknown[]> {
-    return Promise.all(this.keys.map(key => this.confidant.get(key)))
+  getResults_(): Promise<unknown[]> {
+    return Promise.all(this.keys_.map(key => this.confidant_.get(key)))
   }
 
-  private async updateDownstream() {
-    const key = this.confidant.keyForTask(this)
+  async updateDownstream_() {
+    const key = this.confidant_.keyForTask(this)
 
     if (key) {
-      const results = await this.getResults()
-      void this.confidant.replaceKey(key, this.fn(...results))
+      const results = await this.getResults_()
+      void this.confidant_.replaceKey(key, this.fn_(...results))
     }
   }
 }
@@ -44,7 +44,7 @@ export class Inputs_<C, V> extends Task<C, V> {
 export const Inputs = (...keys: string[]) => ({
   chain:
     <C, V>(fn: (...values: any[]) => TaskMaker<C, V>): TaskMaker<C, V> =>
-    (confidant: Confidant<C, Record<string, any>>) =>
+    confidant =>
       new Inputs_(confidant, keys, fn),
 })
 

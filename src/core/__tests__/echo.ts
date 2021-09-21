@@ -8,16 +8,16 @@ export const TIMEOUT = 1000
 class Echo_<T> extends Task<EmptyContext, T> {
   constructor(
     confidant: Confidant<EmptyContext, Record<string, any>>,
-    private value: T,
-    private delay: number,
+    public value_: T,
+    public delay_: number,
   ) {
     super(confidant, `${TIMEOUT}ms`)
   }
 
   async initialize(): Promise<T> {
-    await wait(this.delay)
+    await wait(this.delay_)
 
-    return this.value
+    return this.value_
   }
 }
 

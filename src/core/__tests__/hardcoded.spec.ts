@@ -1,8 +1,9 @@
 import { Hardcoded } from "../hardcoded"
+import { getTestConfidant } from "./confidantStub"
 
 describe("Hardcoded", () => {
   it("should contain a hardcoded value", async () => {
-    const task = Hardcoded(5)(null as any)
+    const task = Hardcoded(5)(getTestConfidant())
 
     const resultPromise = task.runInitialize()
 
@@ -12,7 +13,7 @@ describe("Hardcoded", () => {
   })
 
   it("should resolve immediately", async () => {
-    const task = Hardcoded(5)(null as any)
+    const task = Hardcoded(5)(getTestConfidant())
 
     const resultPromise = task.runInitialize()
 

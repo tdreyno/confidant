@@ -1,0 +1,3 @@
+#! /bin/bash
+
+yarn build:incremental && cd test-npm-version && yarn build

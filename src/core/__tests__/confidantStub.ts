@@ -19,4 +19,5 @@ export const getTestConfidant = (
   ({
     logger: getTestConfidantLogger(silent),
     timeout,
+    confidantMock_: true,
   } as unknown as Confidant<any, any>)

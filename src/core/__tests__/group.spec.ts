@@ -55,9 +55,9 @@ describe("Group", () => {
 
     await confidant.runInitialize("group")
 
-    // nestedConfidant is private, so we force it
+    // _ is private, so we force it
     const g = confidant.tasks.group as any
-    const c = g.nestedConfidant as Confidant<any, any>
+    const c = g.nestedConfidant_ as Confidant<any, any>
     c.tasks.taskA.update((n: any) => n * 2)
 
     await wait(100)

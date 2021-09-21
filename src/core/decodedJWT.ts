@@ -5,14 +5,14 @@ import { EmptyContext } from "../util/emptyContext"
 class DecodedJWT_<T> extends Task<EmptyContext, T> {
   constructor(
     confidant: Confidant<EmptyContext, Record<string, any>>,
-    private jwt: string,
-    private validator: (jwt: unknown) => T,
+    public jwt_: string,
+    public validator_: (jwt: unknown) => T,
   ) {
     super(confidant)
   }
 
   async initialize(): Promise<T> {
-    return this.validator(decode(this.jwt))
+    return this.validator_(decode(this.jwt_))
   }
 }
 

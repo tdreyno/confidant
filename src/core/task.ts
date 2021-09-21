@@ -8,9 +8,9 @@ class Confidant_<
   Ms extends Record<string, TaskMaker<C, any>>,
 > {
   tasks: { [K in keyof Ms]: Task<C, TaskMakerResult<Ms[K]>> }
-  public globalTimeout: number
-  public timeout: string
-  public logger: Logger
+  globalTimeout: number
+  timeout: string
+  logger: Logger
 
   constructor(
     public context: C,
@@ -154,31 +154,48 @@ export enum TaskState {
   DESTROYED = "DESTROYED",
 }
 
-export abstract class Task<C, V> {
-  public state: TaskState = TaskState.PENDING
-  protected currentValue: V | undefined
-  protected timeout: number
-  public initListeners: Set<(value: V) => void> = new Set()
-  public updateListeners: Set<(value: V) => void> = new Set()
+export class Task<C, V> {
+  state: TaskState = TaskState.PENDING
+  currentValue_: V | undefined
+  timeout_: number
+  initListeners: Set<(value: V) => void> = new Set()
+  updateListeners: Set<(value: V) => void> = new Set()
 
   constructor(
-    protected confidant: Confidant<C, Record<string, any>>,
+    public confidant_: Confidant<C, Record<string, any>>,
     timeout?: string,
   ) {
-    this.timeout = timeout
+    if (
+      !(confidant_ instanceof Confidant_) &&
+      !(confidant_ as any).confidantMock_
+    ) {
+      throw new Error("Invalid confidant object")
+    }
+
+    if (!this.validateContext_()) {
+      throw new Error("Invalid confidant object context")
+    }
+
+    this.timeout_ = timeout
       ? ms(timeout)
-      : this.confidant
-      ? this.confidant.globalTimeout
+      : this.confidant_
+      ? this.confidant_.globalTimeout
       : ms("30s")
   }
 
-  get logger() {
-    return this.confidant.logger
+  validateContext_(): boolean {
+    return true
   }
 
-  abstract initialize(): Promise<V>
+  get logger() {
+    return this.confidant_.logger
+  }
 
-  public get(): Promise<V> {
+  initialize(): Promise<V> {
+    throw new Error("Must be overridden in class")
+  }
+
+  get(): Promise<V> {
     // this.logger.debug(`Current task state: ${this.state}`)
 
     if (this.state === TaskState.DESTROYED) {
@@ -187,7 +204,7 @@ export abstract class Task<C, V> {
 
     if (this.state === TaskState.INITIALIZED) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return Promise.resolve(this.currentValue!)
+      return Promise.resolve(this.currentValue_!)
     }
 
     if (this.state === TaskState.UPDATING) {
@@ -207,12 +224,12 @@ export abstract class Task<C, V> {
     })
   }
 
-  public onInitialize(fn: (value: V) => void): () => void {
+  onInitialize(fn: (value: V) => void): () => void {
     this.initListeners.add(fn)
     return () => this.initListeners.delete(fn)
   }
 
-  public onUpdate(fn: (value: V) => void): () => void {
+  onUpdate(fn: (value: V) => void): () => void {
     this.updateListeners.add(fn)
     return () => this.updateListeners.delete(fn)
   }
@@ -226,11 +243,11 @@ export abstract class Task<C, V> {
       throw new Error("Cannot set Task value before initialization")
     }
 
-    if (this.currentValue === value) {
+    if (this.currentValue_ === value) {
       return
     }
 
-    this.currentValue = value
+    this.currentValue_ = value
 
     this.updateListeners.forEach(listener => listener(value))
 
@@ -239,47 +256,47 @@ export abstract class Task<C, V> {
 
   update(fn: (currentValue: V) => V): void {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    this.set(fn(this.currentValue!))
+    this.set(fn(this.currentValue_!))
   }
 
-  public async runInitialize(): Promise<V> {
+  async runInitialize(): Promise<V> {
     if (this.state === TaskState.DESTROYED) {
       throw new Error("Task has been destroyed")
     }
 
     if (this.state === TaskState.INITIALIZED) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return this.currentValue!
+      return this.currentValue_!
     }
 
     const value = await Promise.race([
-      timeout(this.timeout) as Promise<V>,
+      timeout(this.timeout_) as Promise<V>,
       this.initialize(),
     ])
 
     this.state = TaskState.INITIALIZED
-    this.currentValue = value
+    this.currentValue_ = value
     this.initListeners.forEach(listener => listener(value))
 
     return value
   }
 
-  public destroy() {
+  destroy() {
     this.initListeners = new Set()
     this.updateListeners = new Set()
 
-    this.onDestroy()
+    this.onDestroy_()
 
     this.state = TaskState.DESTROYED
   }
 
-  protected onDestroy() {
+  onDestroy_() {
     return
   }
 
   async invalidate(): Promise<V> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.currentValue!
+    return this.currentValue_!
   }
 }
 

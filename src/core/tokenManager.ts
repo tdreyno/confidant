@@ -12,9 +12,9 @@ type KeyCache = {
 }
 
 export class TokenManager {
-  public cache: KeyCache = {}
-  private logger: Logger
-  private refetchBufferTimeMs: number
+  cache: KeyCache = {}
+  logger_: Logger
+  refetchBufferTimeMs_: number
 
   /**
    * https://github.com/vercel/ms
@@ -32,9 +32,9 @@ export class TokenManager {
    * ms('-200')    // -200
    **/
   constructor(refetchBufferTimeMs = "5m") {
-    this.refetchBufferTimeMs = ms(refetchBufferTimeMs)
+    this.refetchBufferTimeMs_ = ms(refetchBufferTimeMs)
 
-    this.logger = createLogger({
+    this.logger_ = createLogger({
       silent: true,
     })
 
@@ -42,7 +42,7 @@ export class TokenManager {
   }
 
   setLogger(logger: Logger) {
-    this.logger = logger
+    this.logger_ = logger
   }
 
   clear(): void {
@@ -76,12 +76,12 @@ export class TokenManager {
       }
     }
 
-    const delay = expiresAt(jwt, this.refetchBufferTimeMs)
+    const delay = expiresAt(jwt, this.refetchBufferTimeMs_)
 
     const isExpired = isFinite(delay) && delay <= 0
 
     if (isExpired) {
-      this.logger.debug(
+      this.logger_.debug(
         "Tried to set a jwt that is already expired. Calling onExpiry immediately.",
       )
 
@@ -97,10 +97,10 @@ export class TokenManager {
 
     this.cache[key] = { jwt }
 
-    this.logger.debug(`Set JWT: ${shorten(jwt)}`)
+    this.logger_.debug(`Set JWT: ${shorten(jwt)}`)
 
     if (isFinite(delay)) {
-      this.logger.debug(
+      this.logger_.debug(
         `${shorten(jwt)}: nextRefreshTime is ${formatDistanceToNow(
           Date.now() + delay,
         )}`,
@@ -111,7 +111,7 @@ export class TokenManager {
           return
         }
 
-        this.logger.debug(`${shorten(jwt)}: expired`)
+        this.logger_.debug(`${shorten(jwt)}: expired`)
         doNotify()
       }, delay)
 

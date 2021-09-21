@@ -24,20 +24,23 @@ const getClient = async (
 class LaunchDarkly_<T> extends Task<LaunchDarklyContext, T> {
   constructor(
     confidant: Confidant<LaunchDarklyContext, Record<string, any>>,
-    private launchDarklyKey: string,
-    private key: string,
-    private defaultValue: T,
+    public launchDarklyKey_: string,
+    public key_: string,
+    public defaultValue_: T,
   ) {
     super(confidant)
   }
 
   async initialize(): Promise<T> {
-    const client = await getClient(this.launchDarklyKey, this.confidant.logger)
+    const client = await getClient(
+      this.launchDarklyKey_,
+      this.confidant_.logger,
+    )
 
     return client.variation(
-      this.key,
-      this.confidant.context.launchDarklyUser,
-      this.defaultValue,
+      this.key_,
+      this.confidant_.context.launchDarklyUser,
+      this.defaultValue_,
     )
   }
 }
