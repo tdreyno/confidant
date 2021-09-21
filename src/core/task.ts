@@ -162,7 +162,7 @@ export abstract class Task<C, V> {
   public updateListeners: Set<(value: V) => void> = new Set()
 
   constructor(
-    protected confidant: Confidant_<C, Record<string, any>>,
+    protected confidant: Confidant<C, Record<string, any>>,
     timeout?: string,
   ) {
     this.timeout = timeout
@@ -284,7 +284,7 @@ export abstract class Task<C, V> {
 }
 
 export type TaskMaker<C extends Record<string, any>, V> = (
-  manager: Confidant_<C, Record<string, any>>,
+  confidant: Confidant<C, Record<string, any>>,
 ) => Task<C, V>
 
 export type TaskMakerResult<T extends TaskMaker<any, any>> =

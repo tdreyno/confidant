@@ -1,0 +1,15 @@
+{
+  "name": "test-confidant",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rm -rf dist && tsc --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "@tdreyno/confidant": "^1.11.1",
+    "aws-sdk": "^2.0.0",
+    "launchdarkly-node-server-sdk": "^6.0.0"
+  }
+}

@@ -1,0 +1,3 @@
+#! /bin/bash
+
+yarn link && cd test-npm-version && yarn && yarn link "@tdreyno/confidant" && yarn build

@@ -31,6 +31,7 @@
     "lint": "eslint -c .eslintrc.js --ext .ts src",
     "build": "rm -rf dist && tsc --project tsconfig.json && tsc --project tsconfig.cjs.json && ./bin/fixup",
     "test": "jest --runInBand --forceExit",
+    "test:npm": "./bin/test-npm-version",
     "version": "yarn run build",
     "commit": "git-cz",
     "coverage": "jest --runInBand --forceExit --coverage --coverageDirectory '../coverage'",

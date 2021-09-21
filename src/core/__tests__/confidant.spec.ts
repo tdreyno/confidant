@@ -146,8 +146,8 @@ describe("Confidant", () => {
     }
 
     class CustomTask<T> extends Task<any, T> {
-      constructor(manager: any, private value: T) {
-        super(manager)
+      constructor(confidant: any, private value: T) {
+        super(confidant)
       }
 
       initialize(): Promise<T> {

@@ -60,8 +60,8 @@ export const Group = <
 >(
   nested: Ms,
 ): TaskMaker<C, R> & { tasks: Ms } => {
-  const createTask = (manager: Confidant<C, Record<string, any>>) =>
-    new Group_<Ms, C, R>(manager, nested)
+  const createTask = (confidant: Confidant<C, Record<string, any>>) =>
+    new Group_<Ms, C, R>(confidant, nested)
 
   createTask.tasks = nested
 

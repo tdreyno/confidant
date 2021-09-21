@@ -11,12 +11,12 @@ export abstract class Token extends Task<EmptyContext, string> {
     confidant: Confidant<EmptyContext, Record<string, any>>,
     public name: string,
     protected cacheKey: string,
-    protected manager: TokenManager,
+    protected tokenManager: TokenManager,
     protected retry: AsyncRetry.Options = {},
   ) {
     super(confidant)
 
-    this.manager.setLogger(this.confidant.logger)
+    this.tokenManager.setLogger(this.confidant.logger)
   }
 
   initialize(): Promise<string> {
@@ -28,7 +28,7 @@ export abstract class Token extends Task<EmptyContext, string> {
   }
 
   onDestroy(): void {
-    this.manager.remove(this.cacheKey)
+    this.tokenManager.remove(this.cacheKey)
   }
 
   protected async retryFetchToken(): Promise<string> {
@@ -36,7 +36,7 @@ export abstract class Token extends Task<EmptyContext, string> {
       throw new Error(`JWT Task (${this.name}) has been destroyed`)
     }
 
-    const hit = this.manager.get(this.cacheKey)
+    const hit = this.tokenManager.get(this.cacheKey)
 
     if (hit) {
       // this.logger.debug(`JWT cache hit: ${this.name} - ${this.cacheKey}`)
@@ -48,7 +48,7 @@ export abstract class Token extends Task<EmptyContext, string> {
       const jwt = await retry(() => this.fetchToken(), this.retry)
       this.logger.debug(`JWT Received (${this.name}): ${shorten(jwt)}`)
 
-      this.manager.set(
+      this.tokenManager.set(
         this.cacheKey,
         jwt,
         () => {
@@ -64,7 +64,7 @@ export abstract class Token extends Task<EmptyContext, string> {
 
       return jwt
     } catch (e) {
-      this.manager.remove(this.cacheKey)
+      this.tokenManager.remove(this.cacheKey)
 
       throw e
     }
@@ -81,7 +81,7 @@ export abstract class Token extends Task<EmptyContext, string> {
       return this.get()
     }
 
-    this.manager.remove(this.cacheKey)
+    this.tokenManager.remove(this.cacheKey)
 
     this.state = TaskState.UPDATING
     const newValue = await this.retryFetchToken()
