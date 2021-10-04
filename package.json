@@ -6,7 +6,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">= 12"
+    "node": ">= 14"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -54,9 +54,9 @@
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
     "@commitlint/prompt": "^13.2.0",
-    "@semantic-release/changelog": "^5.0.1",
-    "@semantic-release/git": "^9.0.0",
-    "@semantic-release/github": "^7.2.3",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
+    "@semantic-release/github": "^8.0.1",
     "@types/async-retry": "^1.4.3",
     "@types/jest": "^27.0.0",
     "@types/jsonwebtoken": "^8.5.5",
@@ -69,7 +69,7 @@
     "cz-conventional-changelog": "3.3.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.1",
     "jest": "^27.0.6",
     "launchdarkly-node-server-sdk": "^6.2.0",
@@ -77,7 +77,7 @@
     "msw": "^0.35.0",
     "node-fetch": "^2.6.1",
     "prettier": "^2.3.2",
-    "semantic-release": "^17.4.7",
+    "semantic-release": "^18.0.0",
     "ts-jest": "^27.0.4",
     "ts-toolbelt": "^9.6.0",
     "typescript": "^4.4.3"
