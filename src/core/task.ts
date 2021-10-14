@@ -99,8 +99,15 @@ class Confidant_<
     return this.tasks[key].runInitialize()
   }
 
-  invalidate<K extends keyof Ms>(key: K): Promise<TaskMakerResult<Ms[K]>> {
-    return this.tasks[key].invalidate()
+  async invalidate(path: string): Promise<void> {
+    if (path.length <= 0) {
+      return
+    }
+
+    // console.log(`Confidant invalidate ${path}`)
+    const [head, ...tail] = path.split(".")
+
+    await this.tasks[head].invalidate(tail.join("."))
   }
 }
 
@@ -294,9 +301,12 @@ export class Task<C, V> {
     return
   }
 
-  async invalidate(): Promise<V> {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.currentValue_!
+  async invalidate(path?: string): Promise<void> {
+    if (!path || path.length <= 0) {
+      return
+    }
+
+    // console.log(`Task invalidate ${path}`)
   }
 }
 

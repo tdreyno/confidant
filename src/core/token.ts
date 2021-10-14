@@ -72,13 +72,17 @@ export abstract class Token extends Task<EmptyContext, string> {
 
   abstract fetchToken(): Promise<string>
 
-  async invalidate(): Promise<string> {
+  async invalidate(path?: string): Promise<void> {
+    if (path && path.length > 0) {
+      return
+    }
+
     if (this.state === TaskState.DESTROYED) {
       throw new Error("Task has been destroyed")
     }
 
     if (this.state === TaskState.UPDATING) {
-      return this.get()
+      return
     }
 
     this.tokenManager_.remove(this.cacheKey_)
@@ -87,8 +91,6 @@ export abstract class Token extends Task<EmptyContext, string> {
     const newValue = await this.retryFetchToken_()
 
     this.set(newValue)
-
-    return newValue
   }
 
   nextRefreshTime(data: string, refetchBufferTimeMs = 0): number {

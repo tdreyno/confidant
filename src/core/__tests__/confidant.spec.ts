@@ -1,5 +1,7 @@
 import { createLogger } from "winston"
 import Transport from "winston-transport"
+import { Group } from "../group"
+import { Inputs } from "../inputs"
 import { Confidant, Task } from "../task"
 import { Echo, TIMEOUT } from "./echo"
 
@@ -223,10 +225,38 @@ describe("Confidant", () => {
 
     await confidant.runInitialize("task1")
 
-    const invalidatePromise = confidant.invalidate("task1")
+    await confidant.invalidate("task1")
 
-    const result = await invalidatePromise
+    const result = await confidant.get("task1")
 
     expect(result).toBe(5)
+  })
+
+  it("should be able to invalidate a deeply nested task", async () => {
+    const onUpdate = jest.fn()
+    const newValue = 42
+
+    const confidant = Confidant(null as any, {
+      domain: Group({
+        a: Echo(3),
+        b: Echo(6),
+        combo: Inputs("a", "b").chain((a: number, b: number) =>
+          Echo(a + b, 100, async t => {
+            t.set(newValue)
+            return
+          }),
+        ),
+      }),
+    })
+
+    confidant.onUpdate("domain", onUpdate)
+
+    await confidant.runInitialize("domain")
+
+    await confidant.invalidate("domain.combo")
+
+    const result = await confidant.get("domain")
+
+    expect(result).toMatchObject({ combo: newValue })
   })
 })

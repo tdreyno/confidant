@@ -121,5 +121,7 @@ const confidant = Confidant(
 
 const results = await confidant.initialize()
 
-const newValue = await confidant.invalidate("myJWT")
+await confidant.invalidate("myJWT")
+
+const newValue = await confidant.get("myJWT")
 ```

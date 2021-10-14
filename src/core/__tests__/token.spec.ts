@@ -217,7 +217,9 @@ describe("JWT", () => {
 
     expect(resultA).toBe(jwts[0])
 
-    const resultB = await task.invalidate()
+    await task.invalidate()
+
+    const resultB = await task.get()
 
     expect(resultB).toBe(jwts[1])
   })

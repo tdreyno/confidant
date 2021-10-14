@@ -47,6 +47,18 @@ export class Group_<
   onDestroy_() {
     this.unsubs_.forEach(unsub => unsub())
   }
+
+  async invalidate(path?: string): Promise<void> {
+    if (!path || path.length <= 0) {
+      return
+    }
+
+    // console.log(`Group invalidate ${path}`)
+
+    const [head, ...tail] = path.split(".")
+
+    await this.nestedConfidant_.tasks[head].invalidate(tail.join("."))
+  }
 }
 
 export const Group = <

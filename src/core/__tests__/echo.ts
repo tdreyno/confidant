@@ -10,6 +10,7 @@ class Echo_<T> extends Task<EmptyContext, T> {
     confidant: Confidant<EmptyContext, Record<string, any>>,
     public value_: T,
     public delay_: number,
+    public onInvalidate_: (task: Echo<T>) => Promise<void>,
   ) {
     super(confidant, `${TIMEOUT}ms`)
   }
@@ -19,11 +20,24 @@ class Echo_<T> extends Task<EmptyContext, T> {
 
     return this.value_
   }
+
+  async invalidate(path?: string): Promise<void> {
+    if (path && path.length > 0) {
+      return
+    }
+
+    // console.log(`Echo invalidate`)
+    await this.onInvalidate_(this)
+  }
 }
 
 export const Echo =
-  <T>(value: T, delay = DELAY): TaskMaker<EmptyContext, T> =>
+  <T>(
+    value: T,
+    delay = DELAY,
+    onInvalidate: (task: Echo<T>) => Promise<void> = async () => void 0,
+  ): TaskMaker<EmptyContext, T> =>
   manager =>
-    new Echo_(manager, value, delay)
+    new Echo_(manager, value, delay, onInvalidate)
 
 export type Echo<T> = Echo_<T>
