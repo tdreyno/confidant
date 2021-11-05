@@ -71,6 +71,7 @@ export class TokenManager {
 
       // If a true was returned, stop the expiry checks
       if (result) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         clearTimeout(this.cache[key].timeoutId as any)
         this.cache[key].timeoutId = undefined
       }
@@ -91,6 +92,7 @@ export class TokenManager {
     }
 
     if (this.cache[key] && this.cache[key].timeoutId) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       clearTimeout(this.cache[key].timeoutId as any)
       this.cache[key].timeoutId = undefined
     }
@@ -126,6 +128,7 @@ export class TokenManager {
     }
 
     if (this.cache[key].timeoutId) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       clearTimeout(this.cache[key].timeoutId as any)
       this.cache[key].timeoutId = undefined
     }

@@ -1,3 +1,4 @@
+import { emptyContext } from "../../util/emptyContext"
 import { wait } from "../../util/timeout"
 import { Group } from "../group"
 import { Hardcoded } from "../hardcoded"
@@ -7,7 +8,7 @@ import { Echo } from "./echo"
 
 describe("Group", () => {
   it("should combine multiple tasks", async () => {
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       group: Group({
         taskA: Echo(1),
         taskB: Hardcoded(5),
@@ -25,7 +26,7 @@ describe("Group", () => {
   })
 
   it("should allow chaining within the subtasks", async () => {
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       group: Group({
         taskA: Echo(5),
         taskB: Inputs("taskA").chain(a => Echo(a * 2)),
@@ -45,7 +46,7 @@ describe("Group", () => {
   it("should update when a subtask updates", async () => {
     const onUpdate = jest.fn()
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       group: Group({
         taskA: Echo(5),
       }),
@@ -74,7 +75,7 @@ describe("Group", () => {
       taskB: Hardcoded(5),
     })
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       group: Group({
         ...defaultTasks.tasks,
         taskB: Inputs("taskA").chain(a => Hardcoded(a * 2)),

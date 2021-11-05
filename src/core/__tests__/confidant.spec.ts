@@ -1,5 +1,6 @@
 import { createLogger } from "winston"
 import Transport from "winston-transport"
+import { emptyContext, EmptyContext } from "../../util/emptyContext"
 import { Group } from "../group"
 import { Inputs } from "../inputs"
 import { Confidant, Task } from "../task"
@@ -9,7 +10,7 @@ describe("Confidant", () => {
   it("should only initialize once", async () => {
     const onInit = jest.fn()
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task: Echo(1),
     })
 
@@ -25,7 +26,7 @@ describe("Confidant", () => {
   it("should run callbacks onInitialize", async () => {
     const onInit = jest.fn()
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task: Echo(1),
     })
 
@@ -37,7 +38,7 @@ describe("Confidant", () => {
   })
 
   it("should initialize all tasks at once", async () => {
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task1: Echo(1, 25),
       task2: Echo(2, 5),
       task3: Echo(3, 15),
@@ -53,7 +54,7 @@ describe("Confidant", () => {
   })
 
   it("should get the value eventually on first run", async () => {
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task: Echo(1),
     })
 
@@ -67,7 +68,7 @@ describe("Confidant", () => {
   })
 
   it("should get the value immediately when available", async () => {
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task: Echo(1),
     })
 
@@ -80,7 +81,7 @@ describe("Confidant", () => {
 
   it("should timeout the get request", async () => {
     const confidant = Confidant(
-      null as any,
+      emptyContext(),
       {
         task: Echo(true, 1000),
       },
@@ -120,7 +121,7 @@ describe("Confidant", () => {
   it("should run callbacks onUpdate", async () => {
     const onUpdate = jest.fn()
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task1: Echo(5),
     })
 
@@ -148,7 +149,10 @@ describe("Confidant", () => {
     }
 
     class CustomTask<T> extends Task<any, T> {
-      constructor(confidant: any, public value_: T) {
+      constructor(
+        confidant: Confidant<EmptyContext, Record<string, any>>,
+        public value_: T,
+      ) {
         super(confidant)
       }
 
@@ -159,9 +163,10 @@ describe("Confidant", () => {
     }
 
     const confidant = Confidant(
-      null as any,
+      emptyContext(),
       {
-        task: c => new CustomTask(c, 5),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        task: c => new CustomTask(c as any, 5),
       },
       {
         logger: createLogger({
@@ -178,7 +183,7 @@ describe("Confidant", () => {
   it("should be able to replace a task by key", async () => {
     const onUpdate = jest.fn()
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task: Echo(1),
     })
 
@@ -190,7 +195,7 @@ describe("Confidant", () => {
   })
 
   it("should lookup tasks", () => {
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task: Echo(1),
     })
 
@@ -217,7 +222,7 @@ describe("Confidant", () => {
   it("should be able to invalidate a task", async () => {
     const onUpdate = jest.fn()
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       task1: Echo(5),
     })
 
@@ -236,7 +241,7 @@ describe("Confidant", () => {
     const onUpdate = jest.fn()
     const newValue = 42
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       domain: Group({
         a: Echo(3),
         b: Echo(6),

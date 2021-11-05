@@ -25,7 +25,7 @@ class Confidant_<
     this.logger = options.logger
 
     this.tasks = Object.entries(taskMakers).reduce((acc: any, [key, maker]) => {
-      acc[key] = maker(this as any)
+      acc[key] = maker(this)
       return acc
     }, {})
   }
@@ -50,7 +50,7 @@ class Confidant_<
   ): Promise<void> {
     const oldTask = this.tasks[key]
 
-    const task = taskMaker(this as any)
+    const task = taskMaker(this)
 
     task.updateListeners = new Set([...oldTask.updateListeners])
 

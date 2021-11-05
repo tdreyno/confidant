@@ -1,4 +1,5 @@
 import { createLogger, format, transports } from "winston"
+import { EmptyContext } from "../../util/emptyContext"
 import { Confidant } from "../task"
 
 export const getTestConfidantLogger = (silent = true) =>
@@ -20,4 +21,4 @@ export const getTestConfidant = (
     logger: getTestConfidantLogger(silent),
     timeout,
     confidantMock_: true,
-  } as unknown as Confidant<any, any>)
+  } as unknown as Confidant<EmptyContext, Record<string, any>>)

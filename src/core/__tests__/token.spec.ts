@@ -7,6 +7,7 @@ import { Token } from "../token"
 import { Confidant } from "../task"
 import { wait } from "../../util/timeout"
 import { getTestConfidant } from "./confidantStub"
+import { EmptyContext } from "../../util/emptyContext"
 
 const server = setupServer()
 
@@ -32,9 +33,8 @@ describe("JWT", () => {
 
     const manager = new TokenManager()
 
-    type TestJWTData = any
     class TestJWT extends Token {
-      constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
+      constructor(confidant: Confidant<EmptyContext, Record<string, any>>) {
         super(confidant, "TestJWT", "test-cache-key", manager)
       }
 
@@ -66,10 +66,9 @@ describe("JWT", () => {
 
     const manager = new TokenManager()
 
-    type TestJWTData = any
     class TestJWT extends Token {
       constructor(
-        confidant: Confidant<TestJWTData, Record<string, any>>,
+        confidant: Confidant<EmptyContext, Record<string, any>>,
         cacheKey: string,
       ) {
         super(confidant, "TestJWT", cacheKey, manager)
@@ -126,7 +125,7 @@ describe("JWT", () => {
     const manager = new TokenManager("0s")
 
     class TestJWT extends Token {
-      constructor(confidant: Confidant<any, Record<string, any>>) {
+      constructor(confidant: Confidant<EmptyContext, Record<string, any>>) {
         super(confidant, "TestJWT", "test-key", manager, {
           onRetry: err => {
             this.logger.error(err)
@@ -199,7 +198,7 @@ describe("JWT", () => {
     const manager = new TokenManager()
 
     class TestJWT extends Token {
-      constructor(confidant: Confidant<any, Record<string, any>>) {
+      constructor(confidant: Confidant<EmptyContext, Record<string, any>>) {
         super(confidant, "TestJWT", "test-key", manager)
       }
 
@@ -263,7 +262,7 @@ describe("JWT", () => {
     const manager = new TokenManager()
 
     class TestJWT extends Token {
-      constructor(confidant: Confidant<any, Record<string, any>>) {
+      constructor(confidant: Confidant<EmptyContext, Record<string, any>>) {
         super(confidant, "TestJWT", "test-cache-key", manager, {
           randomize: false,
           minTimeout: 100,
@@ -309,9 +308,8 @@ describe("JWT", () => {
 
     const manager = new TokenManager()
 
-    type TestJWTData = any
     class TestJWT extends Token {
-      constructor(confidant: Confidant<TestJWTData, Record<string, any>>) {
+      constructor(confidant: Confidant<EmptyContext, Record<string, any>>) {
         super(confidant, "TestJWT", "test-cache-key", manager, {
           randomize: false,
           retries: 3,

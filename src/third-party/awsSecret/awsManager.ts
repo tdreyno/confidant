@@ -34,6 +34,7 @@ export class AWSManager {
 
   set(key: string, value: string, notifyOnExpiry?: () => void): void {
     if (this.cache[key] && this.cache[key].timeoutId) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       clearTimeout(this.cache[key].timeoutId as any)
       this.cache[key].timeoutId = undefined
     }
@@ -56,6 +57,7 @@ export class AWSManager {
     }
 
     if (this.cache[key].timeoutId) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       clearTimeout(this.cache[key].timeoutId as any)
       this.cache[key].timeoutId = undefined
     }

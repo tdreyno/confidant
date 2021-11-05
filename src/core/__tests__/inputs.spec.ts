@@ -2,6 +2,7 @@ import { Confidant } from "../task"
 import { Inputs } from "../inputs"
 import { Echo } from "./echo"
 import { wait } from "../../util/timeout"
+import { emptyContext } from "../../util/emptyContext"
 
 describe("Inputs", () => {
   it("should initialize chained Task after inputs", async () => {
@@ -10,7 +11,7 @@ describe("Inputs", () => {
 
     const waitValue = 5
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       waiting: Echo(waitValue, 10),
       chained: Inputs("waiting").chain(v => Echo(v * 2, 10)),
     })
@@ -39,7 +40,7 @@ describe("Inputs", () => {
     const value = 5
     const delay = 500
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       waiting: Echo(value, delay),
       chained: Inputs("waiting").chain(v => Echo(v * 2, delay)),
     })
@@ -60,7 +61,7 @@ describe("Inputs", () => {
   it("should handle updates if missing from confidant", async () => {
     const waitValue = 5
 
-    const confidant = Confidant(null as any, {
+    const confidant = Confidant(emptyContext(), {
       waiting: Echo(waitValue, 10),
     })
 
