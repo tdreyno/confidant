@@ -52,8 +52,8 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^15.0.0",
-    "@commitlint/config-conventional": "^14.1.0",
-    "@commitlint/prompt": "^14.1.0",
+    "@commitlint/config-conventional": "^15.0.0",
+    "@commitlint/prompt": "^15.0.0",
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
     "@semantic-release/github": "^8.0.1",
@@ -74,7 +74,7 @@
     "jest": "^27.4.3",
     "launchdarkly-node-server-sdk": "^6.2.0",
     "lint-staged": "^12.1.2",
-    "msw": "^0.35.0",
+    "msw": "^0.36.3",
     "node-fetch": "^2.6.1",
     "prettier": "^2.3.2",
     "semantic-release": "^18.0.0",
@@ -92,8 +92,8 @@
     ]
   },
   "volta": {
-    "node": "14.11.0",
-    "yarn": "1.22.4"
+    "node": "16.13.1",
+    "yarn": "1.22.17"
   },
   "config": {
     "commitizen": {
