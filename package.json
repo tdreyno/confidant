@@ -62,7 +62,7 @@
     "@types/jsonwebtoken": "^8.5.5",
     "@types/ms": "^0.7.31",
     "@types/node-fetch": "^2.5.12",
-    "@typescript-eslint/eslint-plugin": "^5.8.1",
+    "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.3.0",
     "aws-sdk": "^2.1066.0",
     "commitizen": "^4.2.4",
