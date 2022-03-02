@@ -59,7 +59,7 @@
     "@semantic-release/github": "^8.0.1",
     "@types/async-retry": "^1.4.3",
     "@types/jest": "^27.0.0",
-    "@types/jsonwebtoken": "^8.5.5",
+    "@types/jsonwebtoken": "^8.5.8",
     "@types/ms": "^0.7.31",
     "@types/node-fetch": "^2.5.12",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
