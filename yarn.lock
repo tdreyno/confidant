@@ -1210,10 +1210,10 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.2.tgz#423c77877d0569db20e1fc80885ac4118314010e"
   integrity sha512-eZxlbI8GZscaGS7kkc/trHTT5xgrjH3/1n2JDwusC9iahPKWMRvRjJSAN5mCXviuTGQ/lHnhvv8Q1YTpnfz9gA==
 
-"@types/async-retry@^1.4.3":
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/@types/async-retry/-/async-retry-1.4.3.tgz#8b78f6ce88d97e568961732cdd9e5325cdc8c246"
-  integrity sha512-B3C9QmmNULVPL2uSJQ088eGWTNPIeUk35hca6CV8rRDJ8GXuQJP5CCVWA1ZUCrb9xYP7Js/RkLqnNNwKhe+Zsw==
+"@types/async-retry@^1.4.5":
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/@types/async-retry/-/async-retry-1.4.5.tgz#02680eb366739a327550f6ad38bb898a5571a095"
+  integrity sha512-YrdjSD+yQv7h6d5Ip+PMxh3H6ZxKyQk0Ts+PvaNRInxneG9PFVZjFg77ILAN+N6qYf7g4giSJ1l+ZjQ1zeegvA==
   dependencies:
     "@types/retry" "*"
 
